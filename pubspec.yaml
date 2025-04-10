@@ -1,7 +1,7 @@
-name: first_flutter_app
-description: "A new Flutter project."
+name: MathWorks
+description: "MathWorks Constructor Release"
 
-version: 1.0.0+1
+version: 1.0.0
 
 environment:
   sdk: ^3.7.0
