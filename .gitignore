@@ -11,6 +11,15 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+.gitignore
+analysis_options.yaml
+devtools_options.yaml
+.metadata
+build/
+android
+.dart_tool
+.idea
+math_tasks.pdf
 
 # IntelliJ related
 *.iml
