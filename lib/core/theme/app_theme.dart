@@ -24,37 +24,45 @@ class AppTheme {
   }
 
   static ThemeData darkTheme(Color colorSeed) {
+    final darkBackground = Color(
+      0xFF1A1A1A,
+    ); // Темнее чем стандартный grey[850]
+    final darkSurface = Color(0xFF2C2C2C); // Темнее чем стандартный grey[800]
+
     return ThemeData(
       useMaterial3: true,
       colorSchemeSeed: colorSeed,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: Colors.grey[850],
+      scaffoldBackgroundColor: darkBackground,
       textTheme: GoogleFonts.interTextTheme(
         ThemeData.dark().textTheme.copyWith(
-          headlineSmall: TextStyle(color: Colors.grey[300]),
-          titleLarge: TextStyle(color: Colors.grey[300]),
-          titleMedium: TextStyle(color: Colors.grey[400]),
-          bodyLarge: TextStyle(color: Colors.grey[400]),
-          bodyMedium: TextStyle(color: Colors.grey[500]),
+          headlineSmall: TextStyle(color: Colors.grey[200]),
+          titleLarge: TextStyle(color: Colors.grey[200]),
+          titleMedium: TextStyle(color: Colors.grey[300]),
+          bodyLarge: TextStyle(color: Colors.grey[300]),
+          bodyMedium: TextStyle(color: Colors.grey[400]),
         ),
       ),
       cardTheme: CardTheme(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: Colors.grey[800],
+        color: darkSurface,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: darkBackground,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      shadowColor: Colors.black.withOpacity(0.2),
+      shadowColor: Colors.black.withOpacity(0.3),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: colorSeed.withOpacity(0.8),
           foregroundColor: Colors.white,
         ),
       ),
+      dialogBackgroundColor: darkSurface,
+      popupMenuTheme: PopupMenuThemeData(color: darkSurface),
+      dividerColor: Colors.grey[700],
     );
   }
 }

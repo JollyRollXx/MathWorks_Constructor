@@ -10,53 +10,82 @@ class CustomTitleBar extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final brightness = Theme.of(context).brightness;
 
+    // Определяем цвет фона title bar в зависимости от темы
+    final backgroundColor =
+        brightness == Brightness.dark
+            ? Color(
+              0xFF242424,
+            ) // Немного светлее чем darkSurface для темной темы
+            : Colors.grey[50]; // Чуть темнее белого для светлой темы
+
     return GestureDetector(
       onPanStart: (details) {
         windowManager.startDragging();
       },
       child: Container(
         height: 32,
-        color:
-            brightness == Brightness.dark
-                ? colorScheme.surface
-                : colorScheme.surface,
-        child: Row(
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          border: Border(
+            bottom: BorderSide(
+              color:
+                  brightness == Brightness.dark
+                      ? Colors.black.withOpacity(0.3)
+                      : Colors.grey[300]!.withOpacity(0.5),
+            ),
+          ),
+        ),
+        child: Stack(
           children: [
-            const SizedBox(width: 16),
-            Text(
-              'MathWorks Constructor',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: colorScheme.onSurface.withOpacity(0.8),
+            // Кнопки управления окном справа
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _WindowButton(
+                    icon: Icons.remove,
+                    onPressed: () async {
+                      await windowManager.minimize();
+                    },
+                    tooltip: 'Свернуть',
+                  ),
+                  _WindowButton(
+                    icon: Icons.crop_square,
+                    onPressed: () async {
+                      if (await windowManager.isMaximized()) {
+                        await windowManager.unmaximize();
+                      } else {
+                        await windowManager.maximize();
+                      }
+                    },
+                    tooltip: 'Развернуть',
+                  ),
+                  _WindowButton(
+                    icon: Icons.close,
+                    isClose: true,
+                    onPressed: () async {
+                      await windowManager.close();
+                    },
+                    tooltip: 'Закрыть',
+                  ),
+                ],
               ),
             ),
-            const Spacer(),
-            _WindowButton(
-              icon: Icons.remove,
-              onPressed: () async {
-                await windowManager.minimize();
-              },
-              tooltip: 'Свернуть',
-            ),
-            _WindowButton(
-              icon: Icons.crop_square,
-              onPressed: () async {
-                if (await windowManager.isMaximized()) {
-                  await windowManager.unmaximize();
-                } else {
-                  await windowManager.maximize();
-                }
-              },
-              tooltip: 'Развернуть',
-            ),
-            _WindowButton(
-              icon: Icons.close,
-              isClose: true,
-              onPressed: () async {
-                await windowManager.close();
-              },
-              tooltip: 'Закрыть',
+            // Название приложения по центру
+            Center(
+              child: Material(
+                color: Colors.transparent,
+                type: MaterialType.transparency,
+                child: Text(
+                  'MathWorks Constructor',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.onSurface.withOpacity(0.8),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -88,6 +117,7 @@ class _WindowButtonState extends State<_WindowButton> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final brightness = Theme.of(context).brightness;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -105,7 +135,9 @@ class _WindowButtonState extends State<_WindowButton> {
                   _isHovered
                       ? (widget.isClose
                           ? Colors.red.withOpacity(0.8)
-                          : colorScheme.surfaceVariant.withOpacity(0.3))
+                          : (brightness == Brightness.dark
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.05)))
                       : Colors.transparent,
               child: Icon(
                 widget.icon,
