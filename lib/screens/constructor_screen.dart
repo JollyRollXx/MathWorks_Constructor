@@ -5,6 +5,7 @@ import 'package:MathWorks/core/services/task_generator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'dart:math';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:typed_data';
@@ -422,22 +423,37 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
 
       int themeTaskIndex = 1;
       for (var task in themeTasks) {
-        widgets.add(
-          pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                '$themeTaskIndex.',
-                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
-              ),
-              pw.SizedBox(width: 8),
-              pw.Text(
-                task.answer ?? 'Нет ответа',
-                style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
-              ),
-            ],
-          ),
-        );
+        if (task.answer != null) {
+          widgets.add(
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  '$themeTaskIndex.',
+                  style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+                ),
+                pw.SizedBox(width: 8),
+                _parseAnswerText(task.answer!, fonts),
+              ],
+            ),
+          );
+        } else {
+          widgets.add(
+            pw.Row(
+              children: [
+                pw.Text(
+                  '$themeTaskIndex.',
+                  style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+                ),
+                pw.SizedBox(width: 8),
+                pw.Text(
+                  'Нет ответа',
+                  style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+                ),
+              ],
+            ),
+          );
+        }
         widgets.add(pw.SizedBox(height: 10));
         themeTaskIndex++;
       }
@@ -472,18 +488,10 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
                 style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
               ),
               pw.SizedBox(width: 8),
-              pw.Column(
-                children: [
-                  pw.Text(
-                    '${task.structure!['numerator']}',
-                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
-                  ),
-                  pw.Container(width: 20, height: 1, color: PdfColors.black),
-                  pw.Text(
-                    '${task.structure!['denominator']}',
-                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
-                  ),
-                ],
+              _buildFractionWidget(
+                task.structure!['numerator'],
+                task.structure!['denominator'],
+                fonts,
               ),
               if (task.text != null)
                 pw.Text(
@@ -500,18 +508,14 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
                 style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
               ),
               pw.SizedBox(width: 8),
-              pw.Column(
-                children: [
-                  pw.Text(
-                    '${task.structure!['fraction1']['numerator']}',
-                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
-                  ),
-                  pw.Container(width: 20, height: 1, color: PdfColors.black),
-                  pw.Text(
-                    '${task.structure!['fraction1']['denominator']}',
-                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
-                  ),
-                ],
+              pw.Text(
+                'Вычислите: ',
+                style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+              ),
+              _buildFractionWidget(
+                task.structure!['fraction1']['numerator'],
+                task.structure!['fraction1']['denominator'],
+                fonts,
               ),
               pw.SizedBox(width: 8),
               pw.Text(
@@ -519,18 +523,10 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
                 style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
               ),
               pw.SizedBox(width: 8),
-              pw.Column(
-                children: [
-                  pw.Text(
-                    '${task.structure!['fraction2']['numerator']}',
-                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
-                  ),
-                  pw.Container(width: 20, height: 1, color: PdfColors.black),
-                  pw.Text(
-                    '${task.structure!['fraction2']['denominator']}',
-                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
-                  ),
-                ],
+              _buildFractionWidget(
+                task.structure!['fraction2']['numerator'],
+                task.structure!['fraction2']['denominator'],
+                fonts,
               ),
             ],
           );
@@ -543,9 +539,15 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
               ),
               pw.SizedBox(width: 8),
               pw.Text(
-                '${task.structure!['expression']} = ${task.structure!['rightSide']}',
+                'Решите уравнение: ',
                 style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
               ),
+              _formatExpressionWithPowers(task.structure!['expression'], fonts),
+              pw.Text(
+                ' = ',
+                style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+              ),
+              _formatExpressionWithPowers(task.structure!['rightSide'], fonts),
             ],
           );
         case 'trig':
@@ -571,8 +573,13 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
               ),
               pw.SizedBox(width: 8),
               pw.Text(
-                'Вычислите: ${task.structure!['base']}^${task.structure!['exponent']}',
+                'Вычислите: ',
                 style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+              ),
+              _buildPowerWidget(
+                task.structure!['base'],
+                task.structure!['exponent'],
+                fonts,
               ),
             ],
           );
@@ -585,7 +592,18 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
               ),
               pw.SizedBox(width: 8),
               pw.Text(
-                'Вычислите: log_${task.structure!['base']}(${task.structure!['argument']})',
+                'Вычислите: log',
+                style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.only(bottom: 4),
+                child: pw.Text(
+                  '${task.structure!['base']}',
+                  style: pw.TextStyle(font: fonts['regular'], fontSize: 12),
+                ),
+              ),
+              pw.Text(
+                '(${task.structure!['argument']})',
                 style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
               ),
             ],
@@ -594,6 +612,36 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
           return pw.Text('$index. Неизвестная структура');
       }
     }
+
+    if (task.text != null) {
+      if (task.text!.contains('/') || task.text!.contains('^')) {
+        return pw.Row(
+          children: [
+            pw.Text(
+              '$index.',
+              style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+            ),
+            pw.SizedBox(width: 8),
+            _parseMixedText(task.text!, fonts),
+          ],
+        );
+      }
+
+      return pw.Row(
+        children: [
+          pw.Text(
+            '$index.',
+            style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+          ),
+          pw.SizedBox(width: 8),
+          pw.Text(
+            task.text!,
+            style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+          ),
+        ],
+      );
+    }
+
     return pw.Row(
       children: [
         pw.Text(
@@ -602,10 +650,186 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
         ),
         pw.SizedBox(width: 8),
         pw.Text(
-          task.text ?? 'Ошибка: нет текста',
+          'Ошибка: нет текста',
           style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
         ),
       ],
+    );
+  }
+
+  pw.Widget _buildFractionWidget(
+    int numerator,
+    int denominator,
+    Map<String, pw.Font> fonts,
+  ) {
+    double lineWidth = max(
+      numerator.toString().length * 8.0,
+      denominator.toString().length * 8.0,
+    );
+
+    lineWidth = max(lineWidth, 20.0);
+
+    return pw.Container(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 2),
+      child: pw.Column(
+        mainAxisSize: pw.MainAxisSize.min,
+        children: [
+          pw.Text(
+            '$numerator',
+            style: pw.TextStyle(font: fonts['regular'], fontSize: 16),
+            textAlign: pw.TextAlign.center,
+          ),
+          pw.Container(width: lineWidth, height: 1.0, color: PdfColors.black),
+          pw.Text(
+            '$denominator',
+            style: pw.TextStyle(font: fonts['regular'], fontSize: 16),
+            textAlign: pw.TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildPowerWidget(
+    dynamic base,
+    dynamic exponent,
+    Map<String, pw.Font> fonts,
+  ) {
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          '$base',
+          style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(top: 1),
+          child: pw.Text(
+            '$exponent',
+            style: pw.TextStyle(font: fonts['regular'], fontSize: 12),
+          ),
+        ),
+      ],
+    );
+  }
+
+  pw.Widget _formatExpressionWithPowers(
+    String expression,
+    Map<String, pw.Font> fonts,
+  ) {
+    final RegExp powerRegex = RegExp(r'(\w+)\^(\d+)');
+    final RegExp fractionRegex = RegExp(r'(\d+)/(\d+)');
+
+    List<pw.Widget> parts = [];
+    String remaining = expression;
+
+    var powerMatches = powerRegex.allMatches(expression).toList();
+    if (powerMatches.isNotEmpty) {
+      int lastEnd = 0;
+      for (var match in powerMatches) {
+        if (match.start > lastEnd) {
+          parts.add(
+            pw.Text(
+              remaining.substring(lastEnd, match.start),
+              style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+            ),
+          );
+        }
+
+        String base = match.group(1)!;
+        String exponent = match.group(2)!;
+
+        parts.add(_buildPowerWidget(base, exponent, fonts));
+
+        lastEnd = match.end;
+      }
+
+      if (lastEnd < remaining.length) {
+        parts.add(
+          pw.Text(
+            remaining.substring(lastEnd),
+            style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+          ),
+        );
+      }
+    } else {
+      parts.add(
+        pw.Text(
+          remaining,
+          style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+        ),
+      );
+    }
+
+    return pw.Row(mainAxisSize: pw.MainAxisSize.min, children: parts);
+  }
+
+  pw.Widget _parseMixedText(String text, Map<String, pw.Font> fonts) {
+    final RegExp fractionRegex = RegExp(r'(\d+)/(\d+)');
+    final RegExp powerRegex = RegExp(r'(\w+)\^(\d+)');
+
+    List<pw.Widget> parts = [];
+    String remaining = text;
+
+    List<RegExpMatch> allMatches = [];
+    allMatches.addAll(fractionRegex.allMatches(text));
+    allMatches.addAll(powerRegex.allMatches(text));
+
+    allMatches.sort((a, b) => a.start.compareTo(b.start));
+
+    if (allMatches.isNotEmpty) {
+      int lastEnd = 0;
+      for (var match in allMatches) {
+        if (match.start > lastEnd) {
+          parts.add(
+            pw.Text(
+              remaining.substring(lastEnd, match.start),
+              style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+            ),
+          );
+        }
+
+        if (match.pattern == fractionRegex) {
+          int numerator = int.parse(match.group(1)!);
+          int denominator = int.parse(match.group(2)!);
+          parts.add(_buildFractionWidget(numerator, denominator, fonts));
+        } else {
+          String base = match.group(1)!;
+          String exponent = match.group(2)!;
+          parts.add(_buildPowerWidget(base, exponent, fonts));
+        }
+
+        lastEnd = match.end;
+      }
+
+      if (lastEnd < remaining.length) {
+        parts.add(
+          pw.Text(
+            remaining.substring(lastEnd),
+            style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+          ),
+        );
+      }
+    } else {
+      parts.add(
+        pw.Text(
+          remaining,
+          style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+        ),
+      );
+    }
+
+    return pw.Row(mainAxisSize: pw.MainAxisSize.min, children: parts);
+  }
+
+  pw.Widget _parseAnswerText(String answer, Map<String, pw.Font> fonts) {
+    if (answer.contains('/') || answer.contains('^')) {
+      return _parseMixedText(answer, fonts);
+    }
+
+    return pw.Text(
+      answer,
+      style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
     );
   }
 
