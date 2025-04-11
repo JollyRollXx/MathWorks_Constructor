@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' as services;
-import 'package:first_flutter_app/core/services/file_service.dart';
-import 'package:first_flutter_app/core/services/task_generator.dart';
+import 'package:MathWorks/core/services/file_service.dart';
+import 'package:MathWorks/core/services/task_generator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
@@ -82,9 +82,15 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
   }
 
   Future<Map<String, pw.Font>> _loadFonts() async {
-    final regularFontData = await services.rootBundle.load('assets/fonts/times.ttf');
-    final boldFontData = await services.rootBundle.load('assets/fonts/timesbd.ttf');
-    final italicFontData = await services.rootBundle.load('assets/fonts/timesi.ttf');
+    final regularFontData = await services.rootBundle.load(
+      'assets/fonts/times.ttf',
+    );
+    final boldFontData = await services.rootBundle.load(
+      'assets/fonts/timesbd.ttf',
+    );
+    final italicFontData = await services.rootBundle.load(
+      'assets/fonts/timesi.ttf',
+    );
     return {
       'regular': pw.Font.ttf(regularFontData),
       'bold': pw.Font.ttf(boldFontData),
@@ -116,9 +122,9 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
           '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year.toString().substring(2)}';
 
       for (
-      int variantIndex = 0;
-      variantIndex < variants.length;
-      variantIndex++
+        int variantIndex = 0;
+        variantIndex < variants.length;
+        variantIndex++
       ) {
         final tasks = variants[variantIndex];
         pdfTasks.addPage(
@@ -127,7 +133,7 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
             margin: const pw.EdgeInsets.all(40),
             header:
                 (pw.Context context) =>
-                _buildHeader(fonts, variantIndex, dateString),
+                    _buildPdfHeader(fonts, variantIndex, dateString),
             footer: (pw.Context context) => _buildFooter(fonts, context),
             build: (pw.Context context) => _buildTaskContent(fonts, tasks),
           ),
@@ -139,12 +145,12 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
               pageFormat: PdfPageFormat.a4,
               margin: const pw.EdgeInsets.all(40),
               header:
-                  (pw.Context context) => _buildHeader(
-                fonts,
-                variantIndex,
-                dateString,
-                isAnswers: true,
-              ),
+                  (pw.Context context) => _buildPdfHeader(
+                    fonts,
+                    variantIndex,
+                    dateString,
+                    isAnswers: true,
+                  ),
               footer: (pw.Context context) => _buildFooter(fonts, context),
               build: (pw.Context context) => _buildAnswerContent(fonts, tasks),
             ),
@@ -186,19 +192,19 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
           context: context,
           builder:
               (context) => AlertDialog(
-            title: const Text('Сохранить PDF?'),
-            content: const Text('Если всё корректно, нажмите "Сохранить".'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Вернуться'),
+                title: const Text('Сохранить PDF?'),
+                content: const Text('Если всё корректно, нажмите "Сохранить".'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Вернуться'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Сохранить'),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Сохранить'),
-              ),
-            ],
-          ),
         );
 
         if (shouldSave == true) {
@@ -234,12 +240,12 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     }
   }
 
-  pw.Widget _buildHeader(
-      Map<String, pw.Font> fonts,
-      int variantIndex,
-      String dateString, {
-        bool isAnswers = false,
-      }) {
+  pw.Widget _buildPdfHeader(
+    Map<String, pw.Font> fonts,
+    int variantIndex,
+    String dateString, {
+    bool isAnswers = false,
+  }) {
     return pw.Container(
       margin: const pw.EdgeInsets.only(bottom: 20),
       child: pw.Column(
@@ -332,9 +338,9 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
   }
 
   List<pw.Widget> _buildTaskContent(
-      Map<String, pw.Font> fonts,
-      List<MathTask> tasks,
-      ) {
+    Map<String, pw.Font> fonts,
+    List<MathTask> tasks,
+  ) {
     Map<String, List<MathTask>> tasksByTheme = {};
     for (var task in tasks) {
       tasksByTheme.putIfAbsent(task.theme, () => []).add(task);
@@ -382,9 +388,9 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
   }
 
   List<pw.Widget> _buildAnswerContent(
-      Map<String, pw.Font> fonts,
-      List<MathTask> tasks,
-      ) {
+    Map<String, pw.Font> fonts,
+    List<MathTask> tasks,
+  ) {
     Map<String, List<MathTask>> tasksByTheme = {};
     for (var task in tasks) {
       tasksByTheme.putIfAbsent(task.theme, () => []).add(task);
@@ -443,44 +449,79 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     ];
   }
 
-  pw.Widget _buildTaskWidget(Map<String, pw.Font> fonts, MathTask task, int index) {
+  pw.Widget _buildTaskWidget(
+    Map<String, pw.Font> fonts,
+    MathTask task,
+    int index,
+  ) {
     if (task.structure != null) {
       switch (task.structure!['type']) {
         case 'fraction':
           return pw.Row(
             children: [
-              pw.Text('$index.', style: pw.TextStyle(font: fonts['bold'], fontSize: 18)),
+              pw.Text(
+                '$index.',
+                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              ),
               pw.SizedBox(width: 8),
               pw.Column(
                 children: [
-                  pw.Text('${task.structure!['numerator']}', style: pw.TextStyle(font: fonts['regular'], fontSize: 18)),
+                  pw.Text(
+                    '${task.structure!['numerator']}',
+                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+                  ),
                   pw.Container(width: 20, height: 1, color: PdfColors.black),
-                  pw.Text('${task.structure!['denominator']}', style: pw.TextStyle(font: fonts['regular'], fontSize: 18)),
+                  pw.Text(
+                    '${task.structure!['denominator']}',
+                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+                  ),
                 ],
               ),
-              if (task.text != null) pw.Text(' ${task.text}', style: pw.TextStyle(font: fonts['regular'], fontSize: 18)),
+              if (task.text != null)
+                pw.Text(
+                  ' ${task.text}',
+                  style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+                ),
             ],
           );
         case 'fractionOperation':
           return pw.Row(
             children: [
-              pw.Text('$index.', style: pw.TextStyle(font: fonts['bold'], fontSize: 18)),
+              pw.Text(
+                '$index.',
+                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              ),
               pw.SizedBox(width: 8),
               pw.Column(
                 children: [
-                  pw.Text('${task.structure!['fraction1']['numerator']}', style: pw.TextStyle(font: fonts['regular'], fontSize: 18)),
+                  pw.Text(
+                    '${task.structure!['fraction1']['numerator']}',
+                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+                  ),
                   pw.Container(width: 20, height: 1, color: PdfColors.black),
-                  pw.Text('${task.structure!['fraction1']['denominator']}', style: pw.TextStyle(font: fonts['regular'], fontSize: 18)),
+                  pw.Text(
+                    '${task.structure!['fraction1']['denominator']}',
+                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+                  ),
                 ],
               ),
               pw.SizedBox(width: 8),
-              pw.Text(task.structure!['operation'], style: pw.TextStyle(font: fonts['regular'], fontSize: 18)),
+              pw.Text(
+                task.structure!['operation'],
+                style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+              ),
               pw.SizedBox(width: 8),
               pw.Column(
                 children: [
-                  pw.Text('${task.structure!['fraction2']['numerator']}', style: pw.TextStyle(font: fonts['regular'], fontSize: 18)),
+                  pw.Text(
+                    '${task.structure!['fraction2']['numerator']}',
+                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+                  ),
                   pw.Container(width: 20, height: 1, color: PdfColors.black),
-                  pw.Text('${task.structure!['fraction2']['denominator']}', style: pw.TextStyle(font: fonts['regular'], fontSize: 18)),
+                  pw.Text(
+                    '${task.structure!['fraction2']['denominator']}',
+                    style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+                  ),
                 ],
               ),
             ],
@@ -488,15 +529,24 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
         case 'equation':
           return pw.Row(
             children: [
-              pw.Text('$index.', style: pw.TextStyle(font: fonts['bold'], fontSize: 18)),
+              pw.Text(
+                '$index.',
+                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              ),
               pw.SizedBox(width: 8),
-              pw.Text('${task.structure!['expression']} = ${task.structure!['rightSide']}', style: pw.TextStyle(font: fonts['regular'], fontSize: 18)),
+              pw.Text(
+                '${task.structure!['expression']} = ${task.structure!['rightSide']}',
+                style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+              ),
             ],
           );
         case 'trig':
           return pw.Row(
             children: [
-              pw.Text('$index.', style: pw.TextStyle(font: fonts['bold'], fontSize: 18)),
+              pw.Text(
+                '$index.',
+                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              ),
               pw.SizedBox(width: 8),
               pw.Text(
                 'Решите уравнение: ${task.structure!['coefficient']}${task.structure!['function']}(${task.structure!['argument']}) = 0',
@@ -507,7 +557,10 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
         case 'power':
           return pw.Row(
             children: [
-              pw.Text('$index.', style: pw.TextStyle(font: fonts['bold'], fontSize: 18)),
+              pw.Text(
+                '$index.',
+                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              ),
               pw.SizedBox(width: 8),
               pw.Text(
                 'Вычислите: ${task.structure!['base']}^${task.structure!['exponent']}',
@@ -518,7 +571,10 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
         case 'logarithm':
           return pw.Row(
             children: [
-              pw.Text('$index.', style: pw.TextStyle(font: fonts['bold'], fontSize: 18)),
+              pw.Text(
+                '$index.',
+                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              ),
               pw.SizedBox(width: 8),
               pw.Text(
                 'Вычислите: log_${task.structure!['base']}(${task.structure!['argument']})',
@@ -532,35 +588,112 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     }
     return pw.Row(
       children: [
-        pw.Text('$index.', style: pw.TextStyle(font: fonts['bold'], fontSize: 18)),
+        pw.Text(
+          '$index.',
+          style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+        ),
         pw.SizedBox(width: 8),
-        pw.Text(task.text ?? 'Ошибка: нет текста', style: pw.TextStyle(font: fonts['regular'], fontSize: 18)),
+        pw.Text(
+          task.text ?? 'Ошибка: нет текста',
+          style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
+        ),
       ],
     );
   }
 
-  Widget _buildModernHeader(String title, ColorScheme colorScheme) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLargeScreen = MediaQuery.of(context).size.width > 1200;
+    final isMediumScreen = MediaQuery.of(context).size.width > 800;
+
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [colorScheme.surface, colorScheme.surface.withOpacity(0.8)],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(isMediumScreen ? 32.0 : 16.0),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 1400),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildPageHeader(context),
+                    const SizedBox(height: 32),
+                    if (isLargeScreen)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 2, child: _buildMainSection(context)),
+                          const SizedBox(width: 24),
+                          Expanded(child: _buildTasksSection(context)),
+                        ],
+                      )
+                    else
+                      Column(
+                        children: [
+                          _buildMainSection(context),
+                          const SizedBox(height: 24),
+                          _buildTasksSection(context),
+                        ],
+                      ),
+                    const SizedBox(height: 40),
+                    _buildActionButton(context),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPageHeader(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 28,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-              color: colorScheme.primary,
-            ),
+          Row(
+            children: [
+              Icon(Icons.edit_document, size: 32, color: colorScheme.primary),
+              const SizedBox(width: 16),
+              Text(
+                'Конструктор работы',
+                style: GoogleFonts.inter(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Container(
-            width: 48,
-            height: 3,
-            decoration: BoxDecoration(
-              color: colorScheme.primary,
-              borderRadius: BorderRadius.circular(2),
+          const SizedBox(height: 8),
+          Text(
+            'Создайте индивидуальную работу с настраиваемыми параметрами',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -568,463 +701,374 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMainSection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isLargeScreen = constraints.maxWidth > 800;
-          return SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: isLargeScreen ? constraints.maxWidth * 0.1 : 16.0,
-              vertical: 24.0,
-            ),
+    return Column(
+      children: [
+        _buildCard(
+          context,
+          title: 'Основные параметры',
+          icon: Icons.settings,
+          child: Form(
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildModernHeader('Создание работы', colorScheme),
-                const SizedBox(height: 16),
+                InputTextField(
+                  controller: _titleController,
+                  label: 'Название работы',
+                  icon: Icons.title,
+                  validator:
+                      (value) =>
+                          value!.isEmpty ? 'Введите название работы' : null,
+                ),
+                const SizedBox(height: 24),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      flex: 2,
-                      child: Column(
-                        children: [
-                          // Карточка "Основные параметры"
-                          Container(
-                            padding: const EdgeInsets.all(16.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              color: Theme.of(context).cardTheme.color,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorScheme.primary.withAlpha(13),
-                                  blurRadius: 10,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Основные параметры',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.primary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  InputTextField(
-                                    controller: _titleController,
-                                    label: 'Название работы',
-                                    icon: Icons.title,
-                                    validator:
-                                        (value) =>
-                                    value!.isEmpty
-                                        ? 'Введите название работы'
-                                        : null,
-                                  ),
-                                  const SizedBox(height: 20),
-                                  InputTextField(
-                                    controller: _variantsController,
-                                    label: 'Количество вариантов',
-                                    icon: Icons.copy,
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) {
-                                      if (value!.isEmpty)
-                                        return 'Введите количество вариантов';
-                                      final count = int.tryParse(value);
-                                      if (count == null || count <= 0)
-                                        return 'Введите число больше 0';
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 20),
-                                  DropdownButtonFormField<String>(
-                                    value: _selectedClass,
-                                    decoration: InputDecoration(
-                                      labelText: 'Класс',
-                                      prefixIcon: const Icon(Icons.school),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          12,
-                                        ),
-                                      ),
-                                    ),
-                                    items:
-                                    _classes.map((String classNum) {
-                                      return DropdownMenuItem<String>(
-                                        value: classNum,
-                                        child: Text(classNum),
-                                      );
-                                    }).toList(),
-                                    onChanged:
-                                    _isAllThemesMode
-                                        ? null
-                                        : (value) {
-                                      setState(() {
-                                        _selectedClass = value!;
-                                        _updateSelectedThemes();
-                                      });
-                                    },
-                                  ),
-                                  const SizedBox(height: 20),
-                                  ListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    leading: Icon(
-                                      Icons.all_inclusive,
-                                      color: colorScheme.primary,
-                                    ),
-                                    title: Text(
-                                      'Режим "Все темы"',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.bodyLarge?.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                        color: colorScheme.onSurface,
-                                      ),
-                                    ),
-                                    trailing: Switch(
-                                      value: _isAllThemesMode,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _isAllThemesMode = value;
-                                          _updateSelectedThemes();
-                                        });
-                                      },
-                                      activeColor: colorScheme.primary,
-                                      inactiveThumbColor:
-                                      colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    'Темы заданий:',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  MultiSelectDropdown(
-                                    themes:
-                                    _isAllThemesMode
-                                        ? _themesByClass.values
-                                        .expand((themes) => themes)
-                                        .toSet()
-                                        .toList()
-                                        : _themesByClass[_selectedClass] ??
-                                        [],
-                                    selectedThemes: _selectedThemes,
-                                    onChanged: (themes) {
-                                      setState(() {
-                                        _selectedThemes = themes;
-                                        _tasksCount.clear();
-                                        for (var theme in themes) {
-                                          _tasksCount[theme] = 5;
-                                        }
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          // Карточка "Дополнительные параметры"
-                          Container(
-                            padding: const EdgeInsets.all(16.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              color: Theme.of(context).cardTheme.color,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorScheme.primary.withAlpha(13),
-                                  blurRadius: 10,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Дополнительные параметры',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: Icon(
-                                    Icons.trending_up,
-                                    color: colorScheme.primary,
-                                  ),
-                                  title: Text(
-                                    'Сложность',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  trailing: DropdownButton<String>(
-                                    value: _difficulty,
-                                    items: const [
-                                      DropdownMenuItem(
-                                        value: 'simple',
-                                        child: Text('Простые'),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'complex',
-                                        child: Text('Сложные'),
-                                      ),
-                                    ],
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _difficulty = value!;
-                                      });
-                                    },
-                                    underline:
-                                    const SizedBox(),
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyLarge?.copyWith(
-                                      color: colorScheme.onSurface,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                    elevation: 2,
-                                  ),
-                                ),
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: Icon(
-                                    Icons.check_circle_outline,
-                                    color: colorScheme.primary,
-                                  ),
-                                  title: Text(
-                                    'С ответами',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  trailing: Switch(
-                                    value: _withAnswers,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _withAnswers = value;
-                                      });
-                                    },
-                                    activeColor: colorScheme.primary,
-                                    inactiveThumbColor:
-                                    colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 8.0,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                    children: [
-                                      ListTile(
-                                        contentPadding: EdgeInsets.zero,
-                                        leading: Icon(
-                                          Icons.numbers,
-                                          color: colorScheme.primary,
-                                        ),
-                                        title: Text(
-                                          'Максимальное число: $_maxNumber',
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.bodyLarge?.copyWith(
-                                            fontWeight: FontWeight.w500,
-                                            color: colorScheme.onSurface,
-                                          ),
-                                        ),
-                                      ),
-                                      SliderInput(
-                                        value: _maxNumber.toDouble(),
-                                        min: 10,
-                                        max: 100,
-                                        divisions: 9,
-                                        label: '$_maxNumber',
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _maxNumber = value.round();
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: Icon(
-                                    Icons.exposure_neg_1,
-                                    color: colorScheme.primary,
-                                  ),
-                                  title: Text(
-                                    'Отрицательные числа',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  trailing: Switch(
-                                    value: _allowNegatives,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _allowNegatives = value;
-                                      });
-                                    },
-                                    activeColor: colorScheme.primary,
-                                    inactiveThumbColor:
-                                    colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      child: InputTextField(
+                        controller: _variantsController,
+                        label: 'Количество вариантов',
+                        icon: Icons.copy,
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value!.isEmpty)
+                            return 'Введите количество вариантов';
+                          final count = int.tryParse(value);
+                          if (count == null || count <= 0)
+                            return 'Введите число больше 0';
+                          return null;
+                        },
                       ),
                     ),
-                    const SizedBox(width: 24),
+                    const SizedBox(width: 16),
                     Expanded(
-                      flex: 1,
-                      child:
-                      _selectedThemes.isNotEmpty
-                          ? Container(
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: Theme.of(context).cardTheme.color,
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorScheme.primary.withAlpha(
-                                13,
-                              ),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedClass,
+                        decoration: InputDecoration(
+                          labelText: 'Класс',
+                          prefixIcon: const Icon(Icons.school),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                        child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Количество заданий',
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ..._selectedThemes.map((theme) {
-                              return Padding(
-                                padding: const EdgeInsets.only(
-                                  bottom: 16,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '$theme: ${_tasksCount[theme]}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                        fontWeight:
-                                        FontWeight.bold,
-                                        color:
-                                        colorScheme
-                                            .onSurface,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    SliderInput(
-                                      value:
-                                      _tasksCount[theme]!
-                                          .toDouble(),
-                                      min: 3,
-                                      max: 30,
-                                      divisions: 27,
-                                      label:
-                                      '${_tasksCount[theme]} заданий',
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _tasksCount[theme] =
-                                              value.toInt();
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
+                        items:
+                            _classes.map((String classNum) {
+                              return DropdownMenuItem<String>(
+                                value: classNum,
+                                child: Text(classNum),
                               );
                             }).toList(),
-                          ],
-                        ),
-                      )
-                          : const SizedBox.shrink(),
+                        onChanged:
+                            _isAllThemesMode
+                                ? null
+                                : (value) {
+                                  setState(() {
+                                    _selectedClass = value!;
+                                    _updateSelectedThemes();
+                                  });
+                                },
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 40),
-                Center(
-                  child: AnimatedButton(
-                    onTap: _generateAndSavePDF,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                const SizedBox(height: 24),
+                _buildSwitchTile(
+                  context,
+                  title: 'Режим "Все темы"',
+                  subtitle: 'Включить задания из всех классов',
+                  value: _isAllThemesMode,
+                  onChanged: (value) {
+                    setState(() {
+                      _isAllThemesMode = value;
+                      _updateSelectedThemes();
+                    });
+                  },
+                  icon: Icons.all_inclusive,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Выбранные темы',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                MultiSelectDropdown(
+                  themes:
+                      _isAllThemesMode
+                          ? _themesByClass.values
+                              .expand((themes) => themes)
+                              .toSet()
+                              .toList()
+                          : _themesByClass[_selectedClass] ?? [],
+                  selectedThemes: _selectedThemes,
+                  onChanged: (themes) {
+                    setState(() {
+                      _selectedThemes = themes;
+                      _tasksCount.clear();
+                      for (var theme in themes) {
+                        _tasksCount[theme] = 5;
+                      }
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        _buildCard(
+          context,
+          title: 'Дополнительные параметры',
+          icon: Icons.tune,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSwitchTile(
+                      context,
+                      title: 'С ответами',
+                      value: _withAnswers,
+                      onChanged: (value) {
+                        setState(() {
+                          _withAnswers = value;
+                        });
+                      },
+                      icon: Icons.check_circle_outline,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        Icons.trending_up,
+                        color: colorScheme.primary,
+                      ),
+                      title: Text(
+                        'Сложность',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                      ),
+                      trailing: DropdownButton<String>(
+                        value: _difficulty,
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'simple',
+                            child: Text('Простые'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'complex',
+                            child: Text('Сложные'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _difficulty = value!;
+                          });
+                        },
+                        underline: const SizedBox(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Максимальное число: $_maxNumber',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              SliderInput(
+                value: _maxNumber.toDouble(),
+                min: 10,
+                max: 100,
+                divisions: 9,
+                label: '$_maxNumber',
+                onChanged: (value) {
+                  setState(() {
+                    _maxNumber = value.round();
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildSwitchTile(
+                context,
+                title: 'Отрицательные числа',
+                value: _allowNegatives,
+                onChanged: (value) {
+                  setState(() {
+                    _allowNegatives = value;
+                  });
+                },
+                icon: Icons.exposure_neg_1,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTasksSection(BuildContext context) {
+    if (_selectedThemes.isEmpty) return const SizedBox.shrink();
+
+    return _buildCard(
+      context,
+      title: 'Количество заданий',
+      icon: Icons.format_list_numbered,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children:
+            _selectedThemes.map((theme) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      theme,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
                       children: [
-                        const Icon(
-                          Icons.play_arrow,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
                         Text(
-                          'Сгенерировать',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.titleMedium?.copyWith(
+                          '${_tasksCount[theme]}',
+                          style: GoogleFonts.inter(
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: SliderInput(
+                            value: _tasksCount[theme]!.toDouble(),
+                            min: 3,
+                            max: 30,
+                            divisions: 27,
+                            label: '${_tasksCount[theme]} заданий',
+                            onChanged: (value) {
+                              setState(() {
+                                _tasksCount[theme] = value.toInt();
+                              });
+                            },
                           ),
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
+              );
+            }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: colorScheme.primary),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSwitchTile(
+    BuildContext context, {
+    required String title,
+    String? subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required IconData icon,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon, color: colorScheme.primary),
+      title: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+      subtitle:
+          subtitle != null
+              ? Text(
+                subtitle,
+                style: GoogleFonts.inter(color: colorScheme.onSurfaceVariant),
+              )
+              : null,
+      trailing: Switch(
+        value: value,
+        onChanged: onChanged,
+        activeColor: colorScheme.primary,
+      ),
+    );
+  }
+
+  Widget _buildActionButton(BuildContext context) {
+    return Center(
+      child: AnimatedButton(
+        onTap: _generateAndSavePDF,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.play_arrow, color: Colors.white, size: 24),
+              const SizedBox(width: 12),
+              Text(
+                'Сгенерировать PDF',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
