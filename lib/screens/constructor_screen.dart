@@ -25,6 +25,8 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _variantsController = TextEditingController(text: '1');
+  final _searchController = TextEditingController();
+  List<String> _filteredThemes = [];
   String _selectedClass = '5';
   String _difficulty = 'simple';
   bool _isAllThemesMode = false;
@@ -62,6 +64,7 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
   void initState() {
     super.initState();
     _updateSelectedThemes();
+    _updateFilteredThemes();
   }
 
   void _updateSelectedThemes() {
@@ -87,7 +90,28 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
         }
       }
     }
+    _updateFilteredThemes();
     setState(() {});
+  }
+
+  void _updateFilteredThemes() {
+    final allThemes =
+        _isAllThemesMode
+            ? _themesByClass.values.expand((themes) => themes).toSet().toList()
+            : _themesByClass[_selectedClass] ?? [];
+
+    if (_searchController.text.isEmpty) {
+      _filteredThemes = List.from(allThemes);
+    } else {
+      _filteredThemes =
+          allThemes
+              .where(
+                (theme) => theme.toLowerCase().contains(
+                  _searchController.text.toLowerCase(),
+                ),
+              )
+              .toList();
+    }
   }
 
   Future<Map<String, pw.Font>> _loadFonts() async {
@@ -199,21 +223,112 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
       if (mounted) {
         final shouldSave = await showDialog<bool>(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                title: const Text('Сохранить PDF?'),
-                content: const Text('Если всё корректно, нажмите "Сохранить".'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Вернуться'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Сохранить'),
-                  ),
-                ],
+          builder: (context) {
+            final colorScheme = Theme.of(context).colorScheme;
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 400),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardTheme.color,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.shadow.withAlpha(30),
+                      blurRadius: 15,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.save_alt_rounded,
+                          color: colorScheme.primary,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Сохранение работы',
+                          style: GoogleFonts.inter(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 60,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Работа успешно сгенерирована. Хотите сохранить файлы?',
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'Вернуться',
+                            style: TextStyle(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text('Сохранить'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
 
         if (shouldSave == true) {
@@ -835,90 +950,146 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isLargeScreen = MediaQuery.of(context).size.width > 1200;
-    final isMediumScreen = MediaQuery.of(context).size.width > 800;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isLargeScreen = constraints.maxWidth > 800;
+        final colorScheme = Theme.of(context).colorScheme;
+        final textTheme = Theme.of(context).textTheme;
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(isMediumScreen ? 32.0 : 16.0),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 1400),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: isLargeScreen ? constraints.maxWidth * 0.1 : 16.0,
+            vertical: 24.0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildModernHeader('Конструктор заданий', colorScheme),
+              const SizedBox(height: 24),
+              Wrap(
+                spacing: 16.0,
+                runSpacing: 16.0,
                 children: [
-                  _buildPageHeader(context),
-                  const SizedBox(height: 32),
-                  if (isLargeScreen)
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 2, child: _buildMainSection(context)),
-                        const SizedBox(width: 24),
-                        Expanded(child: _buildTasksSection(context)),
-                      ],
-                    )
-                  else
-                    Column(
-                      children: [
-                        _buildMainSection(context),
-                        const SizedBox(height: 24),
-                        _buildTasksSection(context),
-                      ],
-                    ),
-                  const SizedBox(height: 40),
-                  _buildActionButton(context),
+                  _buildMainSection(context),
+                  _buildTasksSection(context),
                 ],
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPageHeader(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withAlpha(13),
-            blurRadius: 10,
-            spreadRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.edit_document, size: 32, color: colorScheme.primary),
-              const SizedBox(width: 16),
-              Text(
-                'Конструктор работы',
-                style: GoogleFonts.inter(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
+              const SizedBox(height: 24),
+              Center(
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: TweenAnimationBuilder(
+                    duration: const Duration(milliseconds: 200),
+                    tween: Tween<double>(begin: 0, end: 1),
+                    builder: (context, double value, child) {
+                      return Transform.scale(
+                        scale: 1.0 + 0.02 * value,
+                        child: Material(
+                          color: Colors.transparent,
+                          clipBehavior: Clip.antiAlias,
+                          borderRadius: BorderRadius.circular(16),
+                          child: InkWell(
+                            onTap: _generateAndSavePDF,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Ink(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: colorScheme.primary.withOpacity(0.3),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: colorScheme.primary.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    spreadRadius: 0,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.primary.withOpacity(
+                                        0.1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      Icons.auto_awesome,
+                                      color: colorScheme.primary,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'Сгенерировать работу',
+                                        style: textTheme.titleMedium?.copyWith(
+                                          color: colorScheme.onPrimaryContainer,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Создать PDF с заданиями',
+                                        style: textTheme.bodySmall?.copyWith(
+                                          color: colorScheme.onPrimaryContainer
+                                              .withOpacity(0.7),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+        );
+      },
+    );
+  }
+
+  Widget _buildModernHeader(String title, ColorScheme colorScheme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
-            'Создайте индивидуальную работу с настраиваемыми параметрами',
+            title,
             style: GoogleFonts.inter(
-              fontSize: 16,
-              color: colorScheme.onSurfaceVariant,
+              fontSize: 28,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+              color: colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: 48,
+            height: 3,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
         ],
@@ -928,123 +1099,171 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
 
   Widget _buildMainSection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final brightness = Theme.of(context).brightness;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildCard(
-          context,
-          title: 'Основные параметры',
-          icon: Icons.settings,
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                InputTextField(
-                  controller: _titleController,
-                  label: 'Название работы',
-                  icon: Icons.title,
-                  validator:
-                      (value) =>
-                          value!.isEmpty ? 'Введите название работы' : null,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: InputTextField(
-                        controller: _variantsController,
-                        label: 'Количество вариантов',
-                        icon: Icons.copy,
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value!.isEmpty)
-                            return 'Введите количество вариантов';
-                          final count = int.tryParse(value);
-                          if (count == null || count <= 0)
-                            return 'Введите число больше 0';
-                          return null;
-                        },
+        Container(
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Theme.of(context).cardTheme.color,
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.shadow.withOpacity(0.1),
+                blurRadius: 8,
+                spreadRadius: 0,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.settings, color: colorScheme.primary, size: 24),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      'Основные параметры',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: _selectedClass,
-                        decoration: InputDecoration(
-                          labelText: 'Класс',
-                          prefixIcon: const Icon(Icons.school),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Container(
+                width: 50,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: BorderRadius.circular(1.5),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceVariant.withOpacity(
+                    brightness == Brightness.dark ? 0.15 : 0.3,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Параметры работы',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
                         ),
-                        items:
-                            _classes.map((String classNum) {
-                              return DropdownMenuItem<String>(
-                                value: classNum,
-                                child: Text(classNum),
-                              );
-                            }).toList(),
-                        onChanged:
-                            _isAllThemesMode
-                                ? null
-                                : (value) {
-                                  setState(() {
-                                    _selectedClass = value!;
-                                    _updateSelectedThemes();
-                                  });
-                                },
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                _buildSwitchTile(
-                  context,
-                  title: 'Режим "Все темы"',
-                  subtitle: 'Включить задания из всех классов',
-                  value: _isAllThemesMode,
-                  onChanged: (value) {
-                    setState(() {
-                      _isAllThemesMode = value;
-                      _updateSelectedThemes();
-                    });
-                  },
-                  icon: Icons.all_inclusive,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Выбранные темы',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
+                      const SizedBox(height: 12),
+                      _buildSettingsCard(
+                        context,
+                        child: InputTextField(
+                          controller: _titleController,
+                          label: 'Название работы',
+                          icon: Icons.title,
+                          validator:
+                              (value) =>
+                                  value!.isEmpty
+                                      ? 'Введите название работы'
+                                      : null,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildSettingsCard(
+                        context,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: InputTextField(
+                                controller: _variantsController,
+                                label: 'Количество вариантов',
+                                icon: Icons.copy,
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value!.isEmpty)
+                                    return 'Введите количество вариантов';
+                                  final count = int.tryParse(value);
+                                  if (count == null || count <= 0)
+                                    return 'Введите число больше 0';
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: DropdownButtonFormField<String>(
+                                value: _selectedClass,
+                                decoration: InputDecoration(
+                                  labelText: 'Класс',
+                                  prefixIcon: const Icon(Icons.school),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                items:
+                                    _classes.map((String classNum) {
+                                      return DropdownMenuItem<String>(
+                                        value: classNum,
+                                        child: Text(classNum),
+                                      );
+                                    }).toList(),
+                                onChanged:
+                                    _isAllThemesMode
+                                        ? null
+                                        : (value) {
+                                          setState(() {
+                                            _selectedClass = value!;
+                                            _updateSelectedThemes();
+                                          });
+                                        },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildSettingsCard(
+                        context,
+                        child: _buildSwitchCard(
+                          context,
+                          title: 'Режим "Все темы"',
+                          subtitle: 'Включить темы из всех классов',
+                          icon: Icons.all_inclusive,
+                          value: _isAllThemesMode,
+                          onChanged: (value) {
+                            setState(() {
+                              _isAllThemesMode = value;
+                              _updateSelectedThemes();
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildSettingsCard(
+                        context,
+                        child: _buildThemeSelector(context),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                MultiSelectDropdown(
-                  themes:
-                      _isAllThemesMode
-                          ? _themesByClass.values
-                              .expand((themes) => themes)
-                              .toSet()
-                              .toList()
-                          : _themesByClass[_selectedClass] ?? [],
-                  selectedThemes: _selectedThemes,
-                  onChanged: (themes) {
-                    setState(() {
-                      _selectedThemes = themes;
-                      _tasksCount.clear();
-                      for (var theme in themes) {
-                        _tasksCount[theme] = 3;
-                      }
-                    });
-                  },
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         _buildCard(
           context,
           title: 'Дополнительные параметры',
@@ -1052,88 +1271,143 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSwitchTile(
-                      context,
-                      title: 'С ответами',
-                      value: _withAnswers,
-                      onChanged: (value) {
-                        setState(() {
-                          _withAnswers = value;
-                        });
-                      },
-                      icon: Icons.check_circle_outline,
-                    ),
+              Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceVariant.withOpacity(
+                    brightness == Brightness.dark ? 0.15 : 0.3,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        Icons.trending_up,
-                        color: colorScheme.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Настройки генерации',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
                       ),
-                      title: Text(
-                        'Сложность',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-                      ),
-                      trailing: DropdownButton<String>(
-                        value: _difficulty,
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'simple',
-                            child: Text('Простые'),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSettingsCard(
+                      context,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Сложность',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(color: colorScheme.onSurface),
                           ),
-                          DropdownMenuItem(
-                            value: 'complex',
-                            child: Text('Сложные'),
+                          SegmentedButton<String>(
+                            segments: const [
+                              ButtonSegment(
+                                value: 'simple',
+                                label: Text('Простые'),
+                                icon: Icon(Icons.emoji_emotions_outlined),
+                              ),
+                              ButtonSegment(
+                                value: 'complex',
+                                label: Text('Сложные'),
+                                icon: Icon(Icons.psychology_outlined),
+                              ),
+                            ],
+                            selected: {_difficulty},
+                            onSelectionChanged: (Set<String> selection) {
+                              setState(() {
+                                _difficulty = selection.first;
+                              });
+                            },
+                            style: ButtonStyle(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                            ),
                           ),
                         ],
-                        onChanged: (value) {
-                          setState(() {
-                            _difficulty = value!;
-                          });
-                        },
-                        underline: const SizedBox(),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Максимальное число: $_maxNumber',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                    const SizedBox(height: 12),
+                    _buildSettingsCard(
+                      context,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Максимальное число: $_maxNumber',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(color: colorScheme.onSurface),
+                          ),
+                          const SizedBox(height: 12),
+                          SliderInput(
+                            value: _maxNumber.toDouble(),
+                            min: 10,
+                            max: 100,
+                            divisions: 9,
+                            label: '$_maxNumber',
+                            onChanged: (value) {
+                              setState(() {
+                                _maxNumber = value.round();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSettingsCard(
+                      context,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Дополнительные настройки',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildSwitchCard(
+                                  context,
+                                  title: 'С ответами',
+                                  subtitle: 'Генерировать файл с ответами',
+                                  icon: Icons.check_circle_outline,
+                                  value: _withAnswers,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _withAnswers = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _buildSwitchCard(
+                                  context,
+                                  title: 'Отрицательные числа',
+                                  subtitle: 'Использовать отрицательные числа',
+                                  icon: Icons.exposure_neg_1,
+                                  value: _allowNegatives,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _allowNegatives = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 8),
-              SliderInput(
-                value: _maxNumber.toDouble(),
-                min: 10,
-                max: 100,
-                divisions: 9,
-                label: '$_maxNumber',
-                onChanged: (value) {
-                  setState(() {
-                    _maxNumber = value.round();
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildSwitchTile(
-                context,
-                title: 'Отрицательные числа',
-                value: _allowNegatives,
-                onChanged: (value) {
-                  setState(() {
-                    _allowNegatives = value;
-                  });
-                },
-                icon: Icons.exposure_neg_1,
               ),
             ],
           ),
@@ -1142,61 +1416,21 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     );
   }
 
-  Widget _buildTasksSection(BuildContext context) {
-    if (_selectedThemes.isEmpty) return const SizedBox.shrink();
+  Widget _buildSettingsCard(BuildContext context, {required Widget child}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final brightness = Theme.of(context).brightness;
 
-    return _buildCard(
-      context,
-      title: 'Количество заданий',
-      icon: Icons.format_list_numbered,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children:
-            _selectedThemes.map((theme) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      theme,
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Text(
-                          '${_tasksCount[theme]}',
-                          style: GoogleFonts.inter(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: SliderInput(
-                            value: _tasksCount[theme]!.toDouble(),
-                            min: 1,
-                            max: 20,
-                            divisions: 19,
-                            label: '${_tasksCount[theme]} заданий',
-                            onChanged: (value) {
-                              setState(() {
-                                _tasksCount[theme] = value.toInt();
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+    return Container(
+      decoration: BoxDecoration(
+        color:
+            brightness == Brightness.dark
+                ? colorScheme.surfaceVariant.withOpacity(0.3)
+                : colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
+      padding: const EdgeInsets.all(16),
+      child: child,
     );
   }
 
@@ -1207,16 +1441,20 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     required Widget child,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 18.0),
+      margin: const EdgeInsets.only(bottom: 16.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
+        color: Theme.of(context).cardTheme.color,
         boxShadow: [
           BoxShadow(
-            color: colorScheme.primary.withAlpha(13),
-            blurRadius: 10,
-            spreadRadius: 2,
+            color: colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 0,
             offset: const Offset(0, 2),
           ),
         ],
@@ -1226,75 +1464,771 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, color: colorScheme.primary),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
+              Icon(icon, color: colorScheme.primary, size: 24),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  title,
+                  style: textTheme.titleLarge?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 10),
+          Container(
+            width: 50,
+            height: 3,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(1.5),
+            ),
+          ),
+          const SizedBox(height: 18),
           child,
         ],
       ),
     );
   }
 
-  Widget _buildSwitchTile(
+  Widget _buildSwitchCard(
     BuildContext context, {
     required String title,
-    String? subtitle,
+    required String subtitle,
+    required IconData icon,
     required bool value,
     required ValueChanged<bool> onChanged,
-    required IconData icon,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: colorScheme.primary),
-      title: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
-      subtitle:
-          subtitle != null
-              ? Text(
-                subtitle,
-                style: GoogleFonts.inter(color: colorScheme.onSurfaceVariant),
-              )
-              : null,
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
-        activeColor: colorScheme.primary,
-      ),
-    );
-  }
+    final textTheme = Theme.of(context).textTheme;
 
-  Widget _buildActionButton(BuildContext context) {
-    return Center(
-      child: AnimatedButton(
-        onTap: _generateAndSavePDF,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onChanged(!value),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color:
+                value
+                    ? colorScheme.primaryContainer.withOpacity(0.3)
+                    : colorScheme.surfaceVariant.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color:
+                  value
+                      ? colorScheme.primary.withOpacity(0.3)
+                      : colorScheme.outlineVariant,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.play_arrow, color: Colors.white, size: 24),
-              const SizedBox(width: 12),
-              Text(
-                'Сгенерировать PDF',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color:
+                          value
+                              ? colorScheme.primary.withOpacity(0.1)
+                              : colorScheme.surfaceVariant.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      icon,
+                      color:
+                          value
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: textTheme.titleMedium?.copyWith(
+                            color:
+                                value
+                                    ? colorScheme.onPrimaryContainer
+                                    : colorScheme.onSurface,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          subtitle,
+                          style: textTheme.bodySmall?.copyWith(
+                            color:
+                                value
+                                    ? colorScheme.onPrimaryContainer
+                                        .withOpacity(0.7)
+                                    : colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: value,
+                    onChanged: onChanged,
+                    activeColor: colorScheme.primary,
+                  ),
+                ],
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildThemeSelector(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final allThemes =
+        _isAllThemesMode
+            ? _themesByClass.values.expand((themes) => themes).toSet().toList()
+            : _themesByClass[_selectedClass] ?? [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Выбор тем',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _searchController,
+          decoration: InputDecoration(
+            hintText: 'Поиск тем...',
+            prefixIcon: const Icon(Icons.search),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 12,
+              horizontal: 16,
+            ),
+          ),
+          onChanged: (query) {
+            setState(() {
+              if (query.isEmpty) {
+                _filteredThemes = List.from(allThemes);
+              } else {
+                _filteredThemes =
+                    allThemes
+                        .where(
+                          (theme) =>
+                              theme.toLowerCase().contains(query.toLowerCase()),
+                        )
+                        .toList();
+              }
+            });
+          },
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            ElevatedButton.icon(
+              icon: const Icon(Icons.check_box_outlined, size: 20),
+              label: const Text('Выбрать все'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                backgroundColor: colorScheme.primaryContainer,
+                foregroundColor: colorScheme.onPrimaryContainer,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                setState(() {
+                  _selectedThemes = List.from(allThemes);
+                  for (var theme in _selectedThemes) {
+                    _tasksCount[theme] ??= 3;
+                  }
+                });
+              },
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.check_box_outline_blank, size: 20),
+              label: const Text('Снять все'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                backgroundColor: colorScheme.surfaceVariant,
+                foregroundColor: colorScheme.onSurfaceVariant,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                setState(() {
+                  _selectedThemes.clear();
+                  _tasksCount.clear();
+                });
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        if (_searchController.text.isNotEmpty)
+          _buildThemeTable(context, _filteredThemes)
+        else if (_isAllThemesMode) ...[
+          for (var classEntry in _themesByClass.entries)
+            _buildThemeGroup(
+              context,
+              '${classEntry.key} класс',
+              classEntry.value,
+            ),
+        ] else
+          _buildThemeTable(context, _filteredThemes),
+      ],
+    );
+  }
+
+  Widget _buildThemeTable(BuildContext context, List<String> themes) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final brightness = Theme.of(context).brightness;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        border: Border.all(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(10),
+        color:
+            brightness == Brightness.dark
+                ? colorScheme.surfaceVariant.withOpacity(0.2)
+                : colorScheme.surface,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              color:
+                  brightness == Brightness.dark
+                      ? colorScheme.surfaceVariant.withOpacity(0.3)
+                      : colorScheme.surfaceVariant.withOpacity(0.5),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      'Тема',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 80,
+                    child: Center(
+                      child: Text(
+                        'Выбор',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (themes.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Темы не найдены',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              )
+            else
+              for (var theme in themes)
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: colorScheme.outlineVariant),
+                    ),
+                    color:
+                        _selectedThemes.contains(theme)
+                            ? (brightness == Brightness.dark
+                                ? colorScheme.primaryContainer.withOpacity(0.2)
+                                : colorScheme.primaryContainer.withOpacity(0.3))
+                            : null,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Text(
+                            theme,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: colorScheme.onSurface),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 80,
+                        child: Center(
+                          child: Checkbox(
+                            value: _selectedThemes.contains(theme),
+                            checkColor:
+                                brightness == Brightness.dark
+                                    ? Colors.black
+                                    : Colors.white,
+                            fillColor: MaterialStateProperty.resolveWith<Color>(
+                              (states) {
+                                if (states.contains(MaterialState.selected)) {
+                                  return colorScheme.primary;
+                                }
+                                return Colors.transparent;
+                              },
+                            ),
+                            visualDensity: VisualDensity.standard,
+                            onChanged: (value) {
+                              setState(() {
+                                if (value == true) {
+                                  _selectedThemes.add(theme);
+                                  _tasksCount[theme] = 3;
+                                } else {
+                                  _selectedThemes.remove(theme);
+                                  _tasksCount.remove(theme);
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeGroup(
+    BuildContext context,
+    String title,
+    List<String> themes,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final brightness = Theme.of(context).brightness;
+
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
+      color:
+          brightness == Brightness.dark
+              ? colorScheme.surfaceVariant.withOpacity(0.2)
+              : colorScheme.surface,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: ExpansionTile(
+          title: Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          initiallyExpanded: false,
+          collapsedBackgroundColor: Colors.transparent,
+          backgroundColor: Colors.transparent,
+          childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: const RoundedRectangleBorder(),
+          children: [
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: themes.length,
+              itemBuilder: (context, index) {
+                final theme = themes[index];
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (_selectedThemes.contains(theme)) {
+                          _selectedThemes.remove(theme);
+                          _tasksCount.remove(theme);
+                        } else {
+                          _selectedThemes.add(theme);
+                          _tasksCount[theme] = 3;
+                        }
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(4),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            _selectedThemes.contains(theme)
+                                ? colorScheme.primaryContainer.withOpacity(
+                                  brightness == Brightness.dark ? 0.15 : 0.2,
+                                )
+                                : null,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _selectedThemes.contains(theme),
+                            checkColor:
+                                brightness == Brightness.dark
+                                    ? Colors.black
+                                    : Colors.white,
+                            fillColor: MaterialStateProperty.resolveWith<Color>(
+                              (states) {
+                                if (states.contains(MaterialState.selected)) {
+                                  return colorScheme.primary;
+                                }
+                                return Colors.transparent;
+                              },
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                if (value == true) {
+                                  _selectedThemes.add(theme);
+                                  _tasksCount[theme] = 3;
+                                } else {
+                                  _selectedThemes.remove(theme);
+                                  _tasksCount.remove(theme);
+                                }
+                              });
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              theme,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: colorScheme.onSurface),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTasksSection(BuildContext context) {
+    if (_selectedThemes.isEmpty) return const SizedBox.shrink();
+
+    final colorScheme = Theme.of(context).colorScheme;
+
+    Map<String, List<String>> themesByClass = {};
+
+    for (String theme in _selectedThemes) {
+      String? classFound;
+
+      for (var entry in _themesByClass.entries) {
+        if (entry.value.contains(theme)) {
+          classFound = entry.key;
+          break;
+        }
+      }
+
+      classFound ??= 'Другие';
+      themesByClass.putIfAbsent(classFound, () => []).add(theme);
+    }
+
+    double averageTaskCount = 0;
+    if (_tasksCount.isNotEmpty) {
+      averageTaskCount =
+          _tasksCount.values.reduce((a, b) => a + b) / _tasksCount.length;
+    } else {
+      averageTaskCount = 3;
+    }
+
+    return _buildCard(
+      context,
+      title: 'Количество заданий',
+      icon: Icons.format_list_numbered,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Для всех тем:',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: SliderInput(
+                  value: averageTaskCount,
+                  min: 1,
+                  max: 20,
+                  divisions: 19,
+                  label: '${averageTaskCount.round()} заданий',
+                  onChanged: (value) {
+                    setState(() {
+                      final newCount = value.toInt();
+                      for (var theme in _selectedThemes) {
+                        _tasksCount[theme] = newCount;
+                      }
+                    });
+                  },
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.check_circle_outline,
+                  color: colorScheme.primary,
+                  size: 22,
+                ),
+                tooltip: 'Применить ко всем',
+                onPressed: () {
+                  setState(() {
+                    final newCount = averageTaskCount.round();
+                    for (var theme in _selectedThemes) {
+                      _tasksCount[theme] = newCount;
+                    }
+                  });
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          ...themesByClass.entries.map((entry) {
+            final classNumber = entry.key;
+            final themes = entry.value;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 9,
+                    horizontal: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.school,
+                        size: 20,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          classNumber == 'Другие'
+                              ? 'Другие темы'
+                              : '$classNumber класс',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: colorScheme.outlineVariant),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Table(
+                      border: TableBorder.symmetric(
+                        inside: BorderSide(color: colorScheme.outlineVariant),
+                      ),
+                      defaultVerticalAlignment:
+                          TableCellVerticalAlignment.middle,
+                      columnWidths: const {
+                        0: FlexColumnWidth(5),
+                        1: FlexColumnWidth(1.5),
+                        2: FlexColumnWidth(2),
+                      },
+                      children: [
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceVariant,
+                          ),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Text(
+                                'Тема',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Text(
+                                'Кол-во',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Text(
+                                'Действия',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ...themes
+                            .map(
+                              (theme) => TableRow(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text(
+                                      theme,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text(
+                                      '${_tasksCount[theme]}',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 6.0,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          iconSize: 22,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          visualDensity: VisualDensity.compact,
+                                          icon: const Icon(
+                                            Icons.remove_circle_outline,
+                                          ),
+                                          onPressed:
+                                              _tasksCount[theme]! > 1
+                                                  ? () => setState(
+                                                    () =>
+                                                        _tasksCount[theme] =
+                                                            _tasksCount[theme]! -
+                                                            1,
+                                                  )
+                                                  : null,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        IconButton(
+                                          iconSize: 22,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          visualDensity: VisualDensity.compact,
+                                          icon: const Icon(
+                                            Icons.add_circle_outline,
+                                          ),
+                                          onPressed:
+                                              _tasksCount[theme]! < 20
+                                                  ? () => setState(
+                                                    () =>
+                                                        _tasksCount[theme] =
+                                                            _tasksCount[theme]! +
+                                                            1,
+                                                  )
+                                                  : null,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                            .toList(),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            );
+          }).toList(),
+        ],
       ),
     );
   }

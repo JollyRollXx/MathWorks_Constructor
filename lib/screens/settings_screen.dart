@@ -43,8 +43,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _themeMode = ThemeMode.values[prefs.getInt('themeMode') ?? ThemeMode.system.index];
-      _selectedColor = Color(prefs.getInt('accentColor') ?? Colors.indigo.toARGB32());
+      _themeMode =
+          ThemeMode.values[prefs.getInt('themeMode') ?? ThemeMode.system.index];
+      _selectedColor = Color(
+        prefs.getInt('accentColor') ?? Colors.indigo.toARGB32(),
+      );
       _savePath = prefs.getString('savePath') ?? _savePath;
     });
   }
@@ -90,11 +93,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildModernHeader('Настройки', colorScheme),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               _buildThemeSection(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               _buildColorSection(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               _buildSavePathSection(),
             ],
           ),
@@ -133,16 +136,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildThemeSection() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Theme.of(context).cardTheme.color,
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withAlpha(13),
-            blurRadius: 10,
-            spreadRadius: 2,
+            color: colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 0,
             offset: const Offset(0, 2),
           ),
         ],
@@ -150,7 +156,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle('Тема приложения'),
+          Row(
+            children: [
+              Icon(Icons.brightness_6, color: colorScheme.primary, size: 24),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  'Тема приложения',
+                  style: textTheme.titleLarge?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: 50,
+            height: 3,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(1.5),
+            ),
+          ),
+          const SizedBox(height: 20),
           SegmentedButton<ThemeMode>(
             segments: const [
               ButtonSegment(
@@ -177,6 +207,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               widget.onThemeChanged(_themeMode);
               _saveThemeMode(_themeMode);
             },
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.resolveWith<Color?>((
+                Set<MaterialState> states,
+              ) {
+                if (states.contains(MaterialState.selected)) {
+                  return colorScheme.primaryContainer;
+                }
+                return null;
+              }),
+              foregroundColor: MaterialStateProperty.resolveWith<Color?>((
+                Set<MaterialState> states,
+              ) {
+                if (states.contains(MaterialState.selected)) {
+                  return colorScheme.onPrimaryContainer;
+                }
+                return null;
+              }),
+            ),
           ),
         ],
       ),
@@ -184,16 +232,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildColorSection() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Theme.of(context).cardTheme.color,
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withAlpha(13),
-            blurRadius: 10,
-            spreadRadius: 2,
+            color: colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 0,
             offset: const Offset(0, 2),
           ),
         ],
@@ -201,23 +252,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle('Цветовая схема'),
+          Row(
+            children: [
+              Icon(Icons.palette, color: colorScheme.primary, size: 24),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  'Цветовая схема',
+                  style: textTheme.titleLarge?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: 50,
+            height: 3,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(1.5),
+            ),
+          ),
+          const SizedBox(height: 20),
           Wrap(
             spacing: 12,
             runSpacing: 12,
-            children: _colorPalette.map((color) {
-              return _ColorCircle(
-                color: color,
-                isSelected: _selectedColor == color,
-                onTap: () {
-                  setState(() {
-                    _selectedColor = color;
-                  });
-                  widget.onColorChanged(color);
-                  _saveAccentColor(color);
-                },
-              );
-            }).toList(),
+            children:
+                _colorPalette.map((color) {
+                  return _ColorCircle(
+                    color: color,
+                    isSelected: _selectedColor == color,
+                    onTap: () {
+                      setState(() {
+                        _selectedColor = color;
+                      });
+                      widget.onColorChanged(color);
+                      _saveAccentColor(color);
+                    },
+                  );
+                }).toList(),
           ),
         ],
       ),
@@ -225,16 +301,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSavePathSection() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Theme.of(context).cardTheme.color,
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withAlpha(13),
-            blurRadius: 10,
-            spreadRadius: 2,
+            color: colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 0,
             offset: const Offset(0, 2),
           ),
         ],
@@ -242,24 +321,139 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle('Путь сохранения'),
-          const SizedBox(height: 8),
-          Text(
-            _savePath,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
+          Row(
+            children: [
+              Icon(Icons.folder, color: colorScheme.primary, size: 24),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  'Путь сохранения',
+                  style: textTheme.titleLarge?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: 50,
+            height: 3,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(1.5),
             ),
           ),
-          const SizedBox(height: 12),
-          AnimatedButton(
-            onTap: _pickSavePath,
-            child: Text(
-              'Выбрать папку',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceVariant.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colorScheme.outlineVariant,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    _savePath,
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 16),
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: TweenAnimationBuilder(
+                  duration: const Duration(milliseconds: 200),
+                  tween: Tween<double>(begin: 0, end: 1),
+                  builder: (context, double value, child) {
+                    return Transform.scale(
+                      scale: 1.0 + 0.02 * value,
+                      child: Material(
+                        color: Colors.transparent,
+                        clipBehavior: Clip.antiAlias,
+                        borderRadius: BorderRadius.circular(16),
+                        child: InkWell(
+                          onTap: _pickSavePath,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Ink(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: colorScheme.primary.withOpacity(0.3),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: colorScheme.primary.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  spreadRadius: 0,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    Icons.folder_open,
+                                    color: colorScheme.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Выбрать папку',
+                                      style: textTheme.titleMedium?.copyWith(
+                                        color: colorScheme.onPrimaryContainer,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Изменить путь сохранения',
+                                      style: textTheme.bodySmall?.copyWith(
+                                        color: colorScheme.onPrimaryContainer
+                                            .withOpacity(0.7),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -326,12 +520,15 @@ class _ColorCircleState extends State<_ColorCircle> {
                   color: widget.color,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: widget.isSelected ? Colors.white : Colors.transparent,
+                    color:
+                        widget.isSelected ? Colors.white : Colors.transparent,
                     width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: widget.color.withAlpha((0.3 + 0.2 * value * 255).toInt()),
+                      color: widget.color.withAlpha(
+                        (0.3 + 0.2 * value * 255).toInt(),
+                      ),
                       blurRadius: 8,
                       spreadRadius: 1,
                       offset: const Offset(0, 2),

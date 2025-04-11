@@ -8,16 +8,17 @@ class AppTheme {
       useMaterial3: true,
       colorSchemeSeed: colorSeed,
       brightness: Brightness.light,
-      textTheme: GoogleFonts.interTextTheme(
-        ThemeData.light().textTheme,
-      ),
+      textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
       scaffoldBackgroundColor: Colors.grey[100],
       cardTheme: CardTheme(
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        color: Color.fromRGBO(255, 255, 255, 0.9), // Заменяем withOpacity(0.9)
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        color: Colors.white.withOpacity(0.9),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
     );
   }
@@ -39,16 +40,18 @@ class AppTheme {
       ),
       cardTheme: CardTheme(
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: Colors.grey[800],
       ),
-      shadowColor: Color.fromRGBO(0, 0, 0, 0.2), // Заменяем withOpacity(0.2)
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.grey[900],
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      shadowColor: Colors.black.withOpacity(0.2),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Color.fromRGBO(
-              colorSeed.red, colorSeed.green, colorSeed.blue, 0.8), // Заменяем withOpacity(0.8)
+          backgroundColor: colorSeed.withOpacity(0.8),
           foregroundColor: Colors.white,
         ),
       ),

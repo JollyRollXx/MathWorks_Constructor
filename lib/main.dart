@@ -4,6 +4,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/app_theme.dart';
 import 'navigation/app_navigation.dart';
+import 'widgets/common/custom_title_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +14,9 @@ void main() async {
     size: Size(1200, 800),
     minimumSize: Size(800, 600),
     center: true,
-    title: 'MathWorks Constructor',
+    backgroundColor: Colors.transparent,
+    skipTaskbar: false,
+    titleBarStyle: TitleBarStyle.hidden,
   );
 
   windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -44,8 +47,9 @@ class _MyAppState extends State<MyApp> {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _themeMode = ThemeMode.values[prefs.getInt('themeMode') ?? ThemeMode.system.index];
-      _colorSeed = Color(prefs.getInt('accentColor') ?? Colors.indigo.toARGB32());
+      _themeMode =
+          ThemeMode.values[prefs.getInt('themeMode') ?? ThemeMode.system.index];
+      _colorSeed = Color(prefs.getInt('accentColor') ?? Colors.indigo.value);
     });
   }
 
@@ -58,7 +62,7 @@ class _MyAppState extends State<MyApp> {
   void _updateColor(Color color) async {
     setState(() => _colorSeed = color);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('accentColor', color.toARGB32()); // Заменяем value
+    await prefs.setInt('accentColor', color.value);
   }
 
   @override
@@ -68,9 +72,16 @@ class _MyAppState extends State<MyApp> {
       theme: AppTheme.lightTheme(_colorSeed),
       darkTheme: AppTheme.darkTheme(_colorSeed),
       themeMode: _themeMode,
-      home: NavigationExample(
-        onThemeChanged: _updateTheme,
-        onColorChanged: _updateColor,
+      home: Column(
+        children: [
+          const CustomTitleBar(),
+          Expanded(
+            child: NavigationExample(
+              onThemeChanged: _updateTheme,
+              onColorChanged: _updateColor,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -59,7 +59,10 @@ class _NavigationExampleState extends State<NavigationExample> {
               Expanded(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (Widget child, Animation<double> animation) {
+                  transitionBuilder: (
+                    Widget child,
+                    Animation<double> animation,
+                  ) {
                     return FadeTransition(opacity: animation, child: child);
                   },
                   child: _screens[_selectedIndex],
@@ -67,7 +70,8 @@ class _NavigationExampleState extends State<NavigationExample> {
               ),
             ],
           ),
-          bottomNavigationBar: isLargeScreen ? null : _buildBottomNavigationBar(),
+          bottomNavigationBar:
+              isLargeScreen ? null : _buildBottomNavigationBar(),
         );
       },
     );
@@ -84,6 +88,14 @@ class _NavigationExampleState extends State<NavigationExample> {
           topRight: Radius.circular(16),
           bottomRight: Radius.circular(16),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 0,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -91,27 +103,41 @@ class _NavigationExampleState extends State<NavigationExample> {
             padding: const EdgeInsets.all(24.0),
             child: Row(
               children: [
-                Icon(
-                  Icons.calculate,
-                  color: colorScheme.primary,
-                  size: 32,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.calculate,
+                    color: colorScheme.primary,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Text(
                   'MathWorks',
                   style: GoogleFonts.inter(
                     fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     color: colorScheme.primary,
                   ),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
+          Container(
+            height: 1,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: colorScheme.outlineVariant.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
               children: [
                 SideNavItem(
                   icon: Icons.home,
@@ -125,7 +151,17 @@ class _NavigationExampleState extends State<NavigationExample> {
                   isSelected: _selectedIndex == 1,
                   onTap: () => _updateIndex(1),
                 ),
-                const Divider(height: 32),
+                Container(
+                  height: 1,
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.outlineVariant.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                ),
                 SideNavItem(
                   icon: Icons.settings,
                   label: 'Настройки',
@@ -151,26 +187,19 @@ class _NavigationExampleState extends State<NavigationExample> {
       currentIndex: _selectedIndex,
       onTap: _updateIndex,
       selectedItemColor: Theme.of(context).colorScheme.primary,
-      unselectedItemColor: Theme.of(context).colorScheme.onSurface.withAlpha(153),
+      unselectedItemColor: Theme.of(
+        context,
+      ).colorScheme.onSurface.withAlpha(153),
       backgroundColor: Theme.of(context).cardTheme.color,
       elevation: 10,
       items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Главная',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Главная'),
         BottomNavigationBarItem(
           icon: Icon(Icons.architecture),
           label: 'Конструктор',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: 'Настройки',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.info),
-          label: 'О приложении',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
+        BottomNavigationBarItem(icon: Icon(Icons.info), label: 'О приложении'),
       ],
     );
   }

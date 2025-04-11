@@ -9,88 +9,133 @@ class SideNavItem extends StatefulWidget {
   final VoidCallback onTap;
 
   const SideNavItem({
+    Key? key,
     required this.icon,
     required this.label,
     required this.isSelected,
     required this.onTap,
-    super.key,
-  });
+  }) : super(key: key);
 
   @override
   State<SideNavItem> createState() => _SideNavItemState();
 }
 
-class _SideNavItemState extends State<SideNavItem> {
+class _SideNavItemState extends State<SideNavItem>
+    with SingleTickerProviderStateMixin {
+  AnimationController? _controller;
+  Animation<double>? _scaleAnimation;
   bool _isHovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnimation();
+  }
+
+  void _initializeAnimation() {
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.05,
+    ).animate(CurvedAnimation(parent: _controller!, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _handleHover(bool isHovered) {
+    if (!mounted || _controller == null) return;
+    setState(() {
+      _isHovered = isHovered;
+      if (isHovered) {
+        _controller!.forward();
+      } else {
+        _controller!.reverse();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final brightness = Theme.of(context).brightness;
 
-    final backgroundColor = widget.isSelected
-        ? (_isHovered
-        ? colorScheme.primary.withAlpha(38) // Заменяем withOpacity(0.15)
-        : colorScheme.primary.withAlpha(25)) // Заменяем withOpacity(0.1)
-        : (_isHovered
-        ? colorScheme.primary.withAlpha(13) // Заменяем withOpacity(0.05)
-        : Colors.transparent);
+    if (_controller == null || _scaleAnimation == null) {
+      _initializeAnimation();
+    }
 
-    return GestureDetector(
-      onTap: widget.onTap,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: backgroundColor,
+        onEnter: (_) => _handleHover(true),
+        onExit: (_) => _handleHover(false),
+        child: AnimatedBuilder(
+          animation: _controller!,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _scaleAnimation?.value ?? 1.0,
+              child: child,
+            );
+          },
+          child: Material(
+            color: Colors.transparent,
+            clipBehavior: Clip.antiAlias,
             borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              AnimatedContainer(
+            child: InkWell(
+              onTap: widget.onTap,
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 4,
-                height: 24,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
-                  color: widget.isSelected ? colorScheme.primary : Colors.transparent,
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(4),
-                    bottomRight: Radius.circular(4),
-                  ),
+                  color:
+                      widget.isSelected
+                          ? colorScheme.primaryContainer.withOpacity(
+                            brightness == Brightness.dark ? 0.3 : 0.5,
+                          )
+                          : _isHovered
+                          ? colorScheme.surfaceVariant.withOpacity(0.2)
+                          : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      widget.icon,
+                      color:
+                          widget.isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      widget.label,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight:
+                            widget.isSelected
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                        color:
+                            widget.isSelected
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 12),
-              Icon(
-                widget.icon,
-                color: widget.isSelected
-                    ? (Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : colorScheme.onSurface)
-                    : _isHovered
-                    ? colorScheme.primary.withAlpha(204) // Заменяем withOpacity(0.8)
-                    : colorScheme.onSurface.withAlpha(178), // Заменяем withOpacity(0.7)
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  widget.label,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: widget.isSelected
-                        ? (Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : colorScheme.onSurface)
-                        : colorScheme.onSurface.withAlpha(230), // Заменяем withOpacity(0.9)
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
