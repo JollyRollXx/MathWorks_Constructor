@@ -67,15 +67,23 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     _selectedThemes.clear();
     _tasksCount.clear();
     if (_isAllThemesMode) {
-      _selectedThemes =
+      final allThemes =
           _themesByClass.values.expand((themes) => themes).toSet().toList();
-      for (var theme in _selectedThemes) {
-        _tasksCount[theme] = 5;
+
+      if (_selectedThemes.isNotEmpty || _tasksCount.isNotEmpty) {
+        _selectedThemes = allThemes;
+        for (var theme in _selectedThemes) {
+          _tasksCount[theme] = 3;
+        }
       }
     } else {
-      _selectedThemes = List.from(_themesByClass[_selectedClass] ?? []);
-      for (var theme in _selectedThemes) {
-        _tasksCount[theme] = 5;
+      final classThemes = _themesByClass[_selectedClass] ?? [];
+
+      if (_selectedThemes.isNotEmpty || _tasksCount.isNotEmpty) {
+        _selectedThemes = List.from(classThemes);
+        for (var theme in _selectedThemes) {
+          _tasksCount[theme] = 3;
+        }
       }
     }
     setState(() {});
@@ -170,7 +178,7 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
       File? tempAnswersFile;
       if (_withAnswers) {
         answersBytes = await pdfAnswers!.save();
-        final String answersFileName = '${sanitizedTitle}_answers.pdf';
+        final String answersFileName = '${sanitizedTitle}_Ответы.pdf';
         tempAnswersFile = File('${tempDir.path}/temp_$answersFileName');
         await tempAnswersFile.writeAsBytes(answersBytes);
       }
@@ -212,7 +220,7 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
             await FileService.saveFile(tasksFileName, tasksBytes);
             if (_withAnswers) {
               await FileService.saveFile(
-                '${sanitizedTitle}_answers.pdf',
+                '${sanitizedTitle}_Ответы.pdf',
                 answersBytes!,
               );
             }
@@ -221,7 +229,7 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
             );
             if (_withAnswers) {
               await FileService.openFile(
-                '${await FileService.getSavePath()}/${sanitizedTitle}_answers.pdf',
+                '${await FileService.getSavePath()}/${sanitizedTitle}_Ответы.pdf',
               );
             }
           } catch (e) {
@@ -606,48 +614,40 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final isLargeScreen = MediaQuery.of(context).size.width > 1200;
     final isMediumScreen = MediaQuery.of(context).size.width > 800;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [colorScheme.surface, colorScheme.surface.withOpacity(0.8)],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(isMediumScreen ? 32.0 : 16.0),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 1400),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPageHeader(context),
-                    const SizedBox(height: 32),
-                    if (isLargeScreen)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(flex: 2, child: _buildMainSection(context)),
-                          const SizedBox(width: 24),
-                          Expanded(child: _buildTasksSection(context)),
-                        ],
-                      )
-                    else
-                      Column(
-                        children: [
-                          _buildMainSection(context),
-                          const SizedBox(height: 24),
-                          _buildTasksSection(context),
-                        ],
-                      ),
-                    const SizedBox(height: 40),
-                    _buildActionButton(context),
-                  ],
-                ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(isMediumScreen ? 32.0 : 16.0),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 1400),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildPageHeader(context),
+                  const SizedBox(height: 32),
+                  if (isLargeScreen)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 2, child: _buildMainSection(context)),
+                        const SizedBox(width: 24),
+                        Expanded(child: _buildTasksSection(context)),
+                      ],
+                    )
+                  else
+                    Column(
+                      children: [
+                        _buildMainSection(context),
+                        const SizedBox(height: 24),
+                        _buildTasksSection(context),
+                      ],
+                    ),
+                  const SizedBox(height: 40),
+                  _buildActionButton(context),
+                ],
               ),
             ),
           ),
@@ -661,13 +661,14 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.1),
+            color: colorScheme.primary.withAlpha(13),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            spreadRadius: 2,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -810,7 +811,7 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
                       _selectedThemes = themes;
                       _tasksCount.clear();
                       for (var theme in themes) {
-                        _tasksCount[theme] = 5;
+                        _tasksCount[theme] = 3;
                       }
                     });
                   },
@@ -954,9 +955,9 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
                         Expanded(
                           child: SliderInput(
                             value: _tasksCount[theme]!.toDouble(),
-                            min: 3,
-                            max: 30,
-                            divisions: 27,
+                            min: 1,
+                            max: 20,
+                            divisions: 19,
                             label: '${_tasksCount[theme]} заданий',
                             onChanged: (value) {
                               setState(() {
@@ -985,13 +986,14 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.1),
+            color: colorScheme.primary.withAlpha(13),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            spreadRadius: 2,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
