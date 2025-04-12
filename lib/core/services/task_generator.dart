@@ -1,5 +1,11 @@
 import 'dart:math';
 
+/// Представляет математическую задачу с различными параметрами и структурой.
+///
+/// [theme] - тема задачи (например, "Обыкновенные дроби", "Степени" и т.д.)
+/// [text] - текстовое представление задачи (опционально)
+/// [structure] - структура задачи в виде Map (для сложных задач)
+/// [answer] - ответ на задачу (опционально)
 class MathTask {
   final String theme;
   String? text;
@@ -126,8 +132,20 @@ class MathTask {
   }
 }
 
+/// Генератор математических задач с поддержкой различных тем и уровней сложности.
+///
+/// Использует кэширование для оптимизации производительности.
+/// Поддерживает генерацию задач по различным темам:
+/// - Обыкновенные дроби
+/// - Степени
+/// - Корни
+/// - Логарифмы
+/// - Тригонометрия
+/// - Уравнения
 class TaskGenerator {
   static final Random _random = Random();
+  static final Map<String, List<MathTask>> _taskCache = {};
+  static const int _maxCacheSize = 100;
 
   static MathTask generateTask(
     String theme, {
@@ -135,6 +153,15 @@ class TaskGenerator {
     required int maxNumber,
     required bool allowNegatives,
   }) {
+    // Проверяем кэш
+    final cacheKey = '${theme}_${difficulty}_${maxNumber}_${allowNegatives}';
+    if (_taskCache.containsKey(cacheKey) && _taskCache[cacheKey]!.isNotEmpty) {
+      final cachedTasks = _taskCache[cacheKey]!;
+      final randomIndex = _random.nextInt(cachedTasks.length);
+      return cachedTasks[randomIndex];
+    }
+
+    // Если кэш пуст или отсутствует, генерируем новую задачу
     bool isComplex = difficulty == 'complex';
     int range = maxNumber > 0 ? maxNumber : (isComplex ? 20 : 10);
 

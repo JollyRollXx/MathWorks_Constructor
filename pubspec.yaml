@@ -1,11 +1,14 @@
 name: MathWorks
-description: "MathWorks Constructor Release"
+description: "Конструктор математических задач с поддержкой различных тем и уровней сложности"
 
-version: 1.0.0
+# Версионирование в формате MAJOR.MINOR.PATCH+BUILD
+version: 1+1.0.0
 
+# Минимальные требования к SDK
 environment:
   sdk: ^3.7.0
 
+# Зависимости приложения
 dependencies:
   flutter:
     sdk: flutter
@@ -22,6 +25,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
 
+# Конфигурация Flutter
 flutter:
   fonts:
     - family: Times
@@ -36,3 +40,15 @@ flutter:
     - assets/fonts/Roboto-Regular.ttf
     - assets/fonts/Roboto-Bold.ttf
     - assets/fonts/Roboto-Italic.ttf
+
+# Метаданные приложения
+authors:
+  - JollyRoll <kirill45189rik@gmail.com>
+homepage: https://github.com/JollyRollXx/MathWorks_Constructor
+repository: https://github.com/JollyRollXx/MathWorks_Constructor
+documentation: https://github.com/JollyRollXx/MathWorks_Constructor/wiki
+
+# Настройки сборки
+build:
+  windows:
+    target-platform: windows-x64
