@@ -202,7 +202,7 @@ class TaskGenerator {
               answer = '$num1/$den1 $comparison $num2/$den2';
               return MathTask.simple(
                 theme,
-                'Сравните дроби: $num1/$den1 и $num2/$den2',
+                'Сравните дроби:\n$num1/$den1 и $num2/$den2',
                 answer: answer,
               );
             case 5:
@@ -211,14 +211,14 @@ class TaskGenerator {
                   '${num1 * (lcm ~/ den1)}/$lcm и ${num2 * (lcm ~/ den2)}/$lcm';
               return MathTask.simple(
                 theme,
-                'Приведите дроби $num1/$den1 и $num2/$den2 к общему знаменателю',
+                'Приведите дроби к общему знаменателю:\n$num1/$den1 и $num2/$den2',
                 answer: answer,
               );
             default:
               return MathTask.simple(theme, 'Ошибка в генерации дробей');
           }
         } else {
-          int choice = _random.nextInt(3);
+          int choice = _random.nextInt(5);
           switch (choice) {
             case 0:
               return MathTask.fraction(
@@ -228,16 +228,40 @@ class TaskGenerator {
                 answer: '$num1/$den1',
               );
             case 1:
-              return MathTask.simple(
-                theme,
-                'Сократите дробь: ${num1 * 2}/${den1 * 2}',
-                answer: '$num1/$den1',
-              );
+              int gcd = _findGCD(num1, den1);
+              if (gcd > 1) {
+                return MathTask.simple(
+                  theme,
+                  'Сократите дробь:\n${num1}/${den1}',
+                  answer: '${num1 ~/ gcd}/${den1 ~/ gcd}',
+                );
+              } else {
+                return MathTask.fraction(
+                  theme,
+                  num1,
+                  den1,
+                  answer: '$num1/$den1',
+                );
+              }
             case 2:
+              String comparison = num1 > den1 ? '>' : '<';
               return MathTask.simple(
                 theme,
-                'Запишите число $num1 в виде дроби со знаменателем $den1',
-                answer: '$num1/$den1',
+                'Сравните дробь с 1:\n$num1/$den1',
+                answer: '$num1/$den1 $comparison 1',
+              );
+            case 3:
+              return MathTask.simple(
+                theme,
+                'Запишите число в виде дроби\nсо знаменателем $den1:\n$num1',
+                answer: '${num1 * den1}/$den1',
+              );
+            case 4:
+              String type = num1 < den1 ? 'правильная' : 'неправильная';
+              return MathTask.simple(
+                theme,
+                'Определите тип дроби:\n$num1/$den1',
+                answer: type,
               );
             default:
               return MathTask.fraction(
@@ -266,68 +290,86 @@ class TaskGenerator {
             case 0:
               return MathTask.simple(
                 theme,
-                'Найдите сумму: $a + $b',
+                'Найдите сумму:\n$a + $b',
                 answer: (a + b).toStringAsFixed(2),
               );
             case 1:
               return MathTask.simple(
                 theme,
-                'Найдите разность: $a - $b',
+                'Найдите разность:\n$a - $b',
                 answer: (a - b).toStringAsFixed(2),
               );
             case 2:
               return MathTask.simple(
                 theme,
-                'Найдите произведение: $a × $b',
+                'Найдите произведение:\n$a × $b',
                 answer: (a * b).toStringAsFixed(2),
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Найдите частное: $a ÷ $b',
+                'Найдите частное:\n$a ÷ $b',
                 answer: (a / b).toStringAsFixed(2),
               );
             case 4:
               return MathTask.simple(
                 theme,
-                'Округлите число $a до целых',
+                'Округлите число до целых:\n$a',
                 answer: a.round().toString(),
               );
             case 5:
               String comparison = a > b ? '>' : '<';
               return MathTask.simple(
                 theme,
-                'Сравните числа: $a и $b',
+                'Сравните числа:\n$a и $b',
                 answer: '$a $comparison $b',
               );
             default:
               return MathTask.simple(theme, 'Ошибка в десятичных дробях');
           }
         } else {
-          int choice = _random.nextInt(3);
+          int choice = _random.nextInt(5);
           switch (choice) {
             case 0:
               return MathTask.simple(
                 theme,
-                'Запишите число как десятичную дробь: $a',
+                'Запишите число как\nдесятичную дробь:\n$a',
                 answer: a.toStringAsFixed(2),
               );
             case 1:
               return MathTask.simple(
                 theme,
-                'Округлите число $a до одного знака после запятой',
+                'Округлите число до одного\nзнака после запятой:\n$a',
                 answer: a.toStringAsFixed(1),
               );
             case 2:
+              String comparison = a > 0 ? '>' : '<';
               return MathTask.simple(
                 theme,
-                'Запишите число $a в виде обыкновенной дроби',
-                answer: '${(a * 100).round()}/100',
+                'Сравните число с нулем:\n$a',
+                answer: '$a $comparison 0',
+              );
+            case 3:
+              int decimalPlaces =
+                  a.toString().split('.').length > 1
+                      ? a.toString().split('.')[1].length
+                      : 0;
+              return MathTask.simple(
+                theme,
+                'Сколько знаков после запятой\nв числе $a?',
+                answer: '$decimalPlaces',
+              );
+            case 4:
+              int numerator = (a * 100).round();
+              return MathTask.simple(
+                theme,
+                'Запишите число в виде\nобыкновенной дроби:\n$a',
+                answer: '$numerator/100',
               );
             default:
               return MathTask.simple(
                 theme,
-                'Запишите число как десятичную дробь: $a',
+                'Запишите число как\nдесятичную дробь:\n$a',
                 answer: a.toStringAsFixed(2),
               );
           }
@@ -342,39 +384,39 @@ class TaskGenerator {
             case 0:
               return MathTask.simple(
                 theme,
-                'Найдите сумму: $a + $b',
+                'Найдите сумму:\n$a + $b',
                 answer: '${a + b}',
               );
             case 1:
               return MathTask.simple(
                 theme,
-                'Найдите разность: $a - $b',
+                'Найдите разность:\n$a - $b',
                 answer: '${a - b}',
               );
             case 2:
               return MathTask.simple(
                 theme,
-                'Найдите произведение: $a × $b',
+                'Найдите произведение:\n$a × $b',
                 answer: '${a * b}',
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Найдите частное: $a ÷ $b (округлите до целого)',
+                'Найдите частное:\n$a ÷ $b\n(округлите до целого)',
                 answer: '${(a / b).round()}',
               );
             case 4:
               int gcd = _findGCD(a, b);
               return MathTask.simple(
                 theme,
-                'Найдите наибольший общий делитель чисел $a и $b',
+                'Найдите наибольший общий\nделитель чисел $a и $b',
                 answer: '$gcd',
               );
             case 5:
               int lcm = _findLCM(a, b);
               return MathTask.simple(
                 theme,
-                'Найдите наименьшее общее кратное чисел $a и $b',
+                'Найдите наименьшее общее\nкратное чисел $a и $b',
                 answer: '$lcm',
               );
             default:
@@ -386,31 +428,31 @@ class TaskGenerator {
             case 0:
               return MathTask.simple(
                 theme,
-                'Найдите сумму: $a + $b',
+                'Найдите сумму:\n$a + $b',
                 answer: '${a + b}',
               );
             case 1:
               return MathTask.simple(
                 theme,
-                'Запишите число $a в виде суммы двух натуральных чисел',
+                'Запишите число $a в виде\nсуммы двух натуральных чисел',
                 answer: '${a - 1} + 1',
               );
             case 2:
               return MathTask.simple(
                 theme,
-                'Разложите число $a на простые множители',
+                'Разложите число $a\nна простые множители',
                 answer: _factorize(a),
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Является ли число $a четным?',
+                'Является ли число $a\nчетным?',
                 answer: a % 2 == 0 ? 'Да' : 'Нет',
               );
             default:
               return MathTask.simple(
                 theme,
-                'Найдите сумму: $a + $b',
+                'Найдите сумму:\n$a + $b',
                 answer: '${a + b}',
               );
           }
@@ -440,26 +482,26 @@ class TaskGenerator {
             case 1:
               return MathTask.simple(
                 theme,
-                'Найдите модуль числа: $b',
+                'Найдите модуль числа:\n$b',
                 answer: '${b.abs()}',
               );
             case 2:
               String comparison = b > c ? '>' : '<';
               return MathTask.simple(
                 theme,
-                'Сравните числа: $b и $c',
+                'Сравните числа:\n$b и $c',
                 answer: '$b $comparison $c',
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Найдите число, противоположное $b',
+                'Найдите число,\nпротивоположное $b',
                 answer: '${-b}',
               );
             case 4:
               return MathTask.simple(
                 theme,
-                'Найдите число, обратное $b',
+                'Найдите число,\nобратное $b',
                 answer: '${1 / b}',
               );
             default:
@@ -485,13 +527,13 @@ class TaskGenerator {
             case 1:
               return MathTask.simple(
                 theme,
-                'Найдите модуль числа: $b',
+                'Найдите модуль числа:\n$b',
                 answer: '${b.abs()}',
               );
             case 2:
               return MathTask.simple(
                 theme,
-                'Запишите число $b в виде дроби со знаменателем $a',
+                'Запишите число $b в виде\nдроби со знаменателем $a',
                 answer: '${b * a}/$a',
               );
             default:
@@ -514,43 +556,43 @@ class TaskGenerator {
             case 0:
               return MathTask.simple(
                 theme,
-                'Упростите выражение: (${a}x + $b) - (${a}x - $b)',
+                'Упростите выражение:\n(${a}x + $b) - (${a}x - $b)',
                 answer: '${2 * b}',
               );
             case 1:
               return MathTask.simple(
                 theme,
-                'Раскройте скобки: ${a}(x + $b)',
+                'Раскройте скобки:\n${a}(x + $b)',
                 answer: '${a}x + ${a * b}',
               );
             case 2:
               return MathTask.simple(
                 theme,
-                'Вынесите общий множитель: ${a * b}x + ${a * b}y',
+                'Вынесите общий множитель:\n${a * b}x + ${a * b}y',
                 answer: '${a * b}(x + y)',
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Приведите подобные: ${a}x + ${b}x + ${a}y',
+                'Приведите подобные:\n${a}x + ${b}x + ${a}y',
                 answer: '${a + b}x + ${a}y',
               );
             case 4:
               return MathTask.simple(
                 theme,
-                'Упростите: (x + $a)(x + $b)',
+                'Упростите:\n(x + $a)(x + $b)',
                 answer: 'x² + ${a + b}x + ${a * b}',
               );
             case 5:
               return MathTask.simple(
                 theme,
-                'Упростите: (x + $a)²',
+                'Упростите:\n(x + $a)²',
                 answer: 'x² + ${2 * a}x + ${a * a}',
               );
             default:
               return MathTask.simple(
                 theme,
-                'Упростите выражение: ${a}x + ${b}x',
+                'Упростите выражение:\n${a}x + ${b}x',
                 answer: '${a + b}x',
               );
           }
@@ -560,31 +602,31 @@ class TaskGenerator {
             case 0:
               return MathTask.simple(
                 theme,
-                'Упростите выражение: ${a}x + ${b}x',
+                'Упростите выражение:\n${a}x + ${b}x',
                 answer: '${a + b}x',
               );
             case 1:
               return MathTask.simple(
                 theme,
-                'Раскройте скобки: ${a}(x + y)',
+                'Раскройте скобки:\n${a}(x + y)',
                 answer: '${a}x + ${a}y',
               );
             case 2:
               return MathTask.simple(
                 theme,
-                'Вынесите общий множитель: ${a}x + ${a}y',
+                'Вынесите общий множитель:\n${a}x + ${a}y',
                 answer: '${a}(x + y)',
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Приведите подобные: ${a}x + ${b}x',
+                'Приведите подобные:\n${a}x + ${b}x',
                 answer: '${a + b}x',
               );
             default:
               return MathTask.simple(
                 theme,
-                'Упростите выражение: ${a}x + ${b}x',
+                'Упростите выражение:\n${a}x + ${b}x',
                 answer: '${a + b}x',
               );
           }
@@ -600,26 +642,26 @@ class TaskGenerator {
               int coef2 = _random.nextInt(range) + 1;
               return MathTask.simple(
                 theme,
-                'Умножьте одночлены: ${coef}x^$exp * ${coef2}x^2',
+                'Умножьте одночлены:\n${coef}x^$exp * ${coef2}x^2',
                 answer: '${coef * coef2}x^${exp + 2}',
               );
             case 1:
               int coef2 = _random.nextInt(range) + 1;
               return MathTask.simple(
                 theme,
-                'Разделите одночлены: ${coef * coef2}x^${exp + 2} ÷ ${coef2}x^2',
+                'Разделите одночлены:\n${coef * coef2}x^${exp + 2} ÷ ${coef2}x^2',
                 answer: '${coef}x^$exp',
               );
             case 2:
               return MathTask.simple(
                 theme,
-                'Возведите в степень: (${coef}x^$exp)²',
+                'Возведите в степень:\n(${coef}x^$exp)²',
                 answer: '${coef * coef}x^${exp * 2}',
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Приведите к стандартному виду: ${coef * 2}x^${exp + 1} * x^${exp - 1}',
+                'Приведите к стандартному виду:\n${coef * 2}x^${exp + 1} * x^${exp - 1}',
                 answer: '${2 * coef}x^${2 * exp}',
               );
             case 4:
@@ -627,13 +669,13 @@ class TaskGenerator {
               String comparison = coef > coef2 ? '>' : '<';
               return MathTask.simple(
                 theme,
-                'Сравните одночлены: ${coef}x^$exp и ${coef2}x^$exp',
+                'Сравните одночлены:\n${coef}x^$exp и ${coef2}x^$exp',
                 answer: '${coef}x^$exp $comparison ${coef2}x^$exp',
               );
             case 5:
               return MathTask.simple(
                 theme,
-                'Найдите степень одночлена: ${coef}x^$exp',
+                'Найдите степень одночлена:\n${coef}x^$exp',
                 answer: '$exp',
               );
             default:
@@ -657,19 +699,19 @@ class TaskGenerator {
             case 1:
               return MathTask.simple(
                 theme,
-                'Запишите одночлен в стандартном виде: ${coef * 2}x^${exp + 1} * x^${exp - 1}',
+                'Запишите одночлен в стандартном виде:\n${coef * 2}x^${exp + 1} * x^${exp - 1}',
                 answer: '${2 * coef}x^${2 * exp}',
               );
             case 2:
               return MathTask.simple(
                 theme,
-                'Найдите коэффициент одночлена: ${coef}x^$exp',
+                'Найдите коэффициент одночлена:\n${coef}x^$exp',
                 answer: '$coef',
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Найдите степень одночлена: ${coef}x^$exp',
+                'Найдите степень одночлена:\n${coef}x^$exp',
                 answer: '$exp',
               );
             default:
@@ -692,43 +734,43 @@ class TaskGenerator {
               int c = _random.nextInt(range) + 1;
               return MathTask.simple(
                 theme,
-                'Упростите: (${a}x² + ${b}x + $c) + (${a}x² - ${b}x)',
+                'Упростите:\n(${a}x² + ${b}x + $c) + (${a}x² - ${b}x)',
                 answer: '${2 * a}x² + $c',
               );
             case 1:
               return MathTask.simple(
                 theme,
-                'Умножьте: (x + $a)(x + $b)',
+                'Умножьте:\n(x + $a)(x + $b)',
                 answer: 'x² + ${a + b}x + ${a * b}',
               );
             case 2:
               return MathTask.simple(
                 theme,
-                'Разделите: (${a * b}x² + ${a * b}x) ÷ ${b}x',
+                'Разделите:\n(${a * b}x² + ${a * b}x) ÷ ${b}x',
                 answer: '${a}x + $a',
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Разложите на множители: x² - ${a * a}',
+                'Разложите на множители:\nx² - ${a * a}',
                 answer: '(x + $a)(x - $a)',
               );
             case 4:
               return MathTask.simple(
                 theme,
-                'Вынесите общий множитель: ${a * b}x² + ${a * b}x',
+                'Вынесите общий множитель:\n${a * b}x² + ${a * b}x',
                 answer: '${a * b}x(x + 1)',
               );
             case 5:
               return MathTask.simple(
                 theme,
-                'Приведите подобные: ${a}x² + ${b}x² + ${a}x + ${b}x',
+                'Приведите подобные:\n${a}x² + ${b}x² + ${a}x + ${b}x',
                 answer: '${a + b}x² + ${a + b}x',
               );
             default:
               return MathTask.simple(
                 theme,
-                'Упростите: ${a}x² + ${b}x',
+                'Упростите:\n${a}x² + ${b}x',
                 answer: '${a}x² + ${b}x',
               );
           }
@@ -738,31 +780,31 @@ class TaskGenerator {
             case 0:
               return MathTask.simple(
                 theme,
-                'Упростите: ${a}x² + ${b}x',
+                'Упростите:\n${a}x² + ${b}x',
                 answer: '${a}x² + ${b}x',
               );
             case 1:
               return MathTask.simple(
                 theme,
-                'Приведите подобные: ${a}x² + ${b}x²',
+                'Приведите подобные:\n${a}x² + ${b}x²',
                 answer: '${a + b}x²',
               );
             case 2:
               return MathTask.simple(
                 theme,
-                'Вынесите общий множитель: ${a * b}x + ${a * b}',
+                'Вынесите общий множитель:\n${a * b}x + ${a * b}',
                 answer: '${a * b}(x + 1)',
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Раскройте скобки: ${a}(x + $b)',
+                'Раскройте скобки:\n${a}(x + $b)',
                 answer: '${a}x + ${a * b}',
               );
             default:
               return MathTask.simple(
                 theme,
-                'Упростите: ${a}x² + ${b}x',
+                'Упростите:\n${a}x² + ${b}x',
                 answer: '${a}x² + ${b}x',
               );
           }
@@ -794,34 +836,34 @@ class TaskGenerator {
               double y0 = (a * x0 * x0 + b * x0 + c).toDouble();
               return MathTask.simple(
                 theme,
-                'Найдите координаты вершины параболы y = ${a}x² + ${b}x + $c',
+                'Найдите координаты вершины\nпараболы y = ${a}x² + ${b}x + $c',
                 answer: '(${x0.toStringAsFixed(2)}, ${y0.toStringAsFixed(2)})',
               );
             case 2:
               double x0 = -b / (2 * a);
               return MathTask.simple(
                 theme,
-                'Найдите уравнение оси симметрии параболы y = ${a}x² + ${b}x + $c',
+                'Найдите уравнение оси симметрии\nпараболы y = ${a}x² + ${b}x + $c',
                 answer: 'x = ${x0.toStringAsFixed(2)}',
               );
             case 3:
               String direction = a > 0 ? 'вверх' : 'вниз';
               return MathTask.simple(
                 theme,
-                'Определите направление ветвей параболы y = ${a}x² + ${b}x + $c',
+                'Определите направление ветвей\nпараболы y = ${a}x² + ${b}x + $c',
                 answer: direction,
               );
             case 4:
               return MathTask.simple(
                 theme,
-                'Найдите точку пересечения параболы y = ${a}x² + ${b}x + $c с осью Oy',
+                'Найдите точку пересечения\nпараболы y = ${a}x² + ${b}x + $c\nс осью Oy',
                 answer: '(0, $c)',
               );
             case 5:
               double discriminant = b * b - 4 * a * c;
               return MathTask.simple(
                 theme,
-                'Найдите дискриминант квадратного уравнения ${a}x² + ${b}x + $c = 0',
+                'Найдите дискриминант\nквадратного уравнения\n${a}x² + ${b}x + $c = 0',
                 answer: discriminant.toStringAsFixed(2),
               );
             default:
@@ -849,20 +891,20 @@ class TaskGenerator {
               double y = (a * x * x + b * x + c).toDouble();
               return MathTask.simple(
                 theme,
-                'Найдите значение функции y = ${a}x² + ${b}x + $c при x = $x',
+                'Найдите значение функции\ny = ${a}x² + ${b}x + $c\nпри x = $x',
                 answer: y.toStringAsFixed(2),
               );
             case 2:
               String direction = a > 0 ? 'вверх' : 'вниз';
               return MathTask.simple(
                 theme,
-                'Определите направление ветвей параболы y = ${a}x² + ${b}x + $c',
+                'Определите направление ветвей\nпараболы y = ${a}x² + ${b}x + $c',
                 answer: direction,
               );
             case 3:
               return MathTask.simple(
                 theme,
-                'Найдите точку пересечения параболы y = ${a}x² + ${b}x + $c с осью Oy',
+                'Найдите точку пересечения\nпараболы y = ${a}x² + ${b}x + $c\nс осью Oy',
                 answer: '(0, $c)',
               );
             default:
@@ -879,26 +921,106 @@ class TaskGenerator {
       case 'Алгебраические дроби':
         int num = _random.nextInt(range) + 1;
         int den = _random.nextInt(range) + 1;
+        double b =
+            allowNegatives
+                ? (_random.nextInt(range * 2) - range).toDouble()
+                : _random.nextInt(range).toDouble();
+        double c =
+            allowNegatives
+                ? (_random.nextInt(range * 2) - range).toDouble()
+                : _random.nextInt(range).toDouble();
+        double a = (_random.nextInt(range) + 1).toDouble();
         if (isComplex) {
-          int num2 = _random.nextInt(range) + 1;
-          int den2 = _random.nextInt(range) + 1;
-          String answer = _calculateFractionMultiplication(
-            num,
-            den,
-            num2,
-            den2,
-          );
-          return MathTask.fractionOperation(
-            theme,
-            '×',
-            num,
-            den,
-            num2,
-            den2,
-            answer: answer,
-          );
+          int choice = _random.nextInt(5);
+          switch (choice) {
+            case 0:
+              String answer = _calculateFractionMultiplication(
+                num,
+                den,
+                num,
+                den,
+              );
+              return MathTask.fractionOperation(
+                theme,
+                '×',
+                num,
+                den,
+                num,
+                den,
+                answer: answer,
+              );
+            case 1:
+              return MathTask.simple(
+                theme,
+                'Найдите модуль числа:\n$b',
+                answer: '${b.abs()}',
+              );
+            case 2:
+              String comparison = b > c ? '>' : '<';
+              return MathTask.simple(
+                theme,
+                'Сравните числа:\n$b и $c',
+                answer: '$b $comparison $c',
+              );
+            case 3:
+              return MathTask.simple(
+                theme,
+                'Найдите число,\nпротивоположное $b',
+                answer: '${-b}',
+              );
+            case 4:
+              return MathTask.simple(
+                theme,
+                'Найдите число,\nобратное $b',
+                answer: '${1 / b}',
+              );
+            default:
+              String answer = _solveQuadratic(a, b, c);
+              return MathTask.equation(
+                theme,
+                '${a}x² + ${b}x',
+                '$c',
+                answer: answer,
+              );
+          }
         } else {
-          return MathTask.fraction(theme, num, den, answer: '$num/$den');
+          int choice = _random.nextInt(5);
+          switch (choice) {
+            case 0:
+              return MathTask.fraction(theme, num, den, answer: '$num/$den');
+            case 1:
+              int gcd = _findGCD(num, den);
+              if (gcd > 1) {
+                return MathTask.simple(
+                  theme,
+                  'Сократите дробь:\n${num}/${den}',
+                  answer: '${num ~/ gcd}/${den ~/ gcd}',
+                );
+              } else {
+                return MathTask.fraction(theme, num, den, answer: '$num/$den');
+              }
+            case 2:
+              return MathTask.simple(
+                theme,
+                'При каких значениях x дробь\nимеет смысл?\n${num}/(x + $den)',
+                answer: 'x ≠ ${-den}',
+              );
+            case 3:
+              String comparison = num > 0 ? '>' : '<';
+              return MathTask.simple(
+                theme,
+                'Сравните дробь с нулем:\n$num/$den',
+                answer: '$num/$den $comparison 0',
+              );
+            case 4:
+              return MathTask.simple(
+                theme,
+                'Представьте дробь в виде суммы\nцелой и дробной частей:\n$num/$den',
+                answer: '${num ~/ den} + ${num % den}/$den',
+              );
+            default:
+              return MathTask.fraction(theme, num, den, answer: '$num/$den');
+          }
         }
 
       case 'Неравенства':
@@ -943,7 +1065,7 @@ class TaskGenerator {
         String answer = _solveSystem(a1, b1, c1, a2, b2, c2);
         return MathTask.simple(
           theme,
-          'Решите систему: ${a1}x + ${b1}y = $c1, ${a2}x + ${b2}y = $c2',
+          'Решите систему:\n${a1}x + ${b1}y = $c1\n${a2}x + ${b2}y = $c2',
           answer: answer,
         );
 
@@ -951,14 +1073,14 @@ class TaskGenerator {
         int a = _random.nextInt(range) + 1;
         return MathTask.simple(
           theme,
-          'Найдите значение функции f(x) = ${a}x при x = 2',
+          'Найдите значение функции\nf(x) = ${a}x при x = 2',
           answer: '${a * 2}',
         );
 
       case 'Тригонометрические уравнения':
         int coef = _random.nextInt(range) + 1;
         String func = _random.nextBool() ? 'sin' : 'cos';
-        String answer = func == 'sin' ? 'pi/2' : '0'; // Заменяем π на pi
+        String answer = func == 'sin' ? 'pi/2' : '0';
         return MathTask.trig(theme, func, coef, 'x', answer: 'x = $answer');
 
       case 'Действительные числа':
@@ -968,7 +1090,7 @@ class TaskGenerator {
                 : _random.nextInt(range).toDouble();
         return MathTask.simple(
           theme,
-          'Найдите модуль числа: $a',
+          'Найдите модуль числа:\n$a',
           answer: '${a.abs()}',
         );
 
@@ -979,7 +1101,7 @@ class TaskGenerator {
         return MathTask.power(theme, base, exp, answer: '$base^$exp = $result');
 
       case 'Логарифмы':
-        int base = _random.nextInt(range - 1) + 2; // base > 1
+        int base = _random.nextInt(range - 1) + 2;
         int arg = _random.nextInt(4) + 1;
         int argument = pow(base, arg).toInt();
         return MathTask.logarithm(
@@ -994,7 +1116,7 @@ class TaskGenerator {
         int b = _random.nextInt(range) + 1;
         return MathTask.simple(
           theme,
-          'Найдите производную: f(x) = ${a}x² + ${b}x',
+          'Найдите производную:\nf(x) = ${a}x² + ${b}x',
           answer: '${2 * a}x + $b',
         );
 
@@ -1003,7 +1125,7 @@ class TaskGenerator {
         int favorable = _random.nextInt(total) + 1;
         return MathTask.simple(
           theme,
-          'Найдите вероятность (в долях): $favorable из $total',
+          'Найдите вероятность\n(в долях):\n$favorable из $total',
           answer: '${favorable / total}',
         );
 
