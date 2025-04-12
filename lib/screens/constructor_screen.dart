@@ -372,63 +372,119 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
   }) {
     return pw.Container(
       margin: const pw.EdgeInsets.only(bottom: 20),
+      decoration: pw.BoxDecoration(
+        border: pw.Border(
+          bottom: pw.BorderSide(color: PdfColors.grey300, width: 1),
+        ),
+      ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.end,
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 4,
+                ),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(4),
+                  ),
+                ),
+                child: pw.Text(
+                  'Вариант ${variantIndex + 1}${isAnswers ? " (Ответы)" : ""}',
+                  style: pw.TextStyle(
+                    font: fonts['bold'],
+                    fontSize: 12,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+              ),
               pw.Text(
                 'Дата: $dateString',
                 style: pw.TextStyle(
                   font: fonts['regular'],
                   fontSize: 12,
-                  color: PdfColors.grey,
+                  color: PdfColors.grey600,
                 ),
               ),
             ],
           ),
-          pw.SizedBox(height: 10),
+          pw.SizedBox(height: 16),
           pw.Text(
-            '${_titleController.text} - Вариант ${variantIndex + 1}${isAnswers ? " (Ответы)" : ""}',
-            style: pw.TextStyle(font: fonts['bold'], fontSize: 24),
+            _titleController.text,
+            style: pw.TextStyle(
+              font: fonts['bold'],
+              fontSize: 24,
+              color: PdfColors.black,
+            ),
           ),
-          pw.SizedBox(height: 5),
+          pw.SizedBox(height: 8),
           if (!_isAllThemesMode)
-            pw.Text(
-              'Класс: $_selectedClass',
-              style: pw.TextStyle(
-                font: fonts['italic'],
-                fontSize: 14,
-                color: PdfColors.grey,
+            pw.Container(
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 4,
+              ),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.grey50,
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+              ),
+              child: pw.Text(
+                'Класс: $_selectedClass',
+                style: pw.TextStyle(
+                  font: fonts['italic'],
+                  fontSize: 14,
+                  color: PdfColors.grey700,
+                ),
               ),
             ),
-          pw.Text(
-            'Темы: ${_selectedThemes.join(', ')}',
-            style: pw.TextStyle(
-              font: fonts['italic'],
-              fontSize: 14,
-              color: PdfColors.grey,
-            ),
-          ),
-          if (!isAnswers) ...[
-            pw.SizedBox(height: 10),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text(
-                  'ФИО ученика: _______________________________',
-                  style: pw.TextStyle(font: fonts['regular'], fontSize: 12),
+          pw.SizedBox(height: 8),
+          if (!isAnswers)
+            pw.Container(
+              padding: const pw.EdgeInsets.all(8),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.grey300, width: 1),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+              ),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    'ФИО ученика: _______________________________',
+                    style: pw.TextStyle(font: fonts['regular'], fontSize: 12),
+                  ),
+                  pw.Text(
+                    'Дата выполнения: ________________',
+                    style: pw.TextStyle(font: fonts['regular'], fontSize: 12),
+                  ),
+                ],
+              ),
+            )
+          else
+            pw.Container(
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 4,
+              ),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.grey50,
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+              ),
+              child: pw.Text(
+                'Темы: ${_selectedThemes.join(', ')}',
+                style: pw.TextStyle(
+                  font: fonts['italic'],
+                  fontSize: 14,
+                  color: PdfColors.grey700,
                 ),
-                pw.Text(
-                  'Дата выполнения: ________________',
-                  style: pw.TextStyle(font: fonts['regular'], fontSize: 12),
-                ),
-              ],
+              ),
             ),
-          ],
-          pw.SizedBox(height: 10),
-          pw.Divider(),
+          if (!isAnswers) pw.SizedBox(height: 16),
+          pw.SizedBox(height: 20),
         ],
       ),
     );
@@ -437,6 +493,12 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
   pw.Widget _buildFooter(Map<String, pw.Font> fonts, pw.Context context) {
     return pw.Container(
       margin: const pw.EdgeInsets.only(top: 20),
+      padding: const pw.EdgeInsets.symmetric(vertical: 8),
+      decoration: pw.BoxDecoration(
+        border: pw.Border(
+          top: pw.BorderSide(color: PdfColors.grey300, width: 1),
+        ),
+      ),
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
@@ -445,15 +507,22 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
             style: pw.TextStyle(
               font: fonts['italic'],
               fontSize: 10,
-              color: PdfColors.grey,
+              color: PdfColors.grey600,
             ),
           ),
-          pw.Text(
-            'Страница ${context.pageNumber} из ${context.pagesCount}',
-            style: pw.TextStyle(
-              font: fonts['regular'],
-              fontSize: 10,
-              color: PdfColors.grey,
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey100,
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+            ),
+            child: pw.Text(
+              'Страница ${context.pageNumber} из ${context.pagesCount}',
+              style: pw.TextStyle(
+                font: fonts['regular'],
+                fontSize: 10,
+                color: PdfColors.grey700,
+              ),
             ),
           ),
         ],
@@ -465,44 +534,32 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     Map<String, pw.Font> fonts,
     List<MathTask> tasks,
   ) {
-    Map<String, List<MathTask>> tasksByTheme = {};
-    for (var task in tasks) {
-      tasksByTheme.putIfAbsent(task.theme, () => []).add(task);
-    }
-
     List<pw.Widget> widgets = [];
-    tasksByTheme.forEach((theme, themeTasks) {
+    int globalTaskIndex = 1;
+
+    for (var task in tasks) {
+      pw.Widget taskWidget = _buildTaskWidget(fonts, task, globalTaskIndex);
       widgets.add(
-        pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.SizedBox(height: 10),
-            pw.Text(
-              theme,
-              style: pw.TextStyle(font: fonts['bold'], fontSize: 16),
-            ),
-            pw.SizedBox(height: 5),
-          ],
+        pw.Container(
+          margin: const pw.EdgeInsets.only(bottom: 12),
+          padding: const pw.EdgeInsets.all(12),
+          decoration: pw.BoxDecoration(
+            border: pw.Border.all(color: PdfColors.grey200, width: 1),
+            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+          ),
+          child: taskWidget,
         ),
       );
-
-      int themeTaskIndex = 1;
-      for (var task in themeTasks) {
-        pw.Widget taskWidget = _buildTaskWidget(fonts, task, themeTaskIndex);
-        widgets.add(taskWidget);
-        widgets.add(pw.SizedBox(height: 10));
-        widgets.add(pw.Divider(height: 1, thickness: 0.5));
-        widgets.add(pw.SizedBox(height: 10));
-        themeTaskIndex++;
-      }
-    });
+      globalTaskIndex++;
+    }
 
     return [
       pw.Container(
+        padding: const pw.EdgeInsets.all(16),
         decoration: pw.BoxDecoration(
-          border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
+          border: pw.Border.all(color: PdfColors.grey300, width: 1),
+          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
         ),
-        padding: const pw.EdgeInsets.all(10),
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: widgets,
@@ -521,65 +578,136 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     }
 
     List<pw.Widget> widgets = [];
+    int globalTaskIndex = 1;
+
     tasksByTheme.forEach((theme, themeTasks) {
       widgets.add(
-        pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.SizedBox(height: 10),
-            pw.Text(
-              theme,
-              style: pw.TextStyle(font: fonts['bold'], fontSize: 16),
-            ),
-            pw.SizedBox(height: 5),
-          ],
+        pw.Container(
+          margin: const pw.EdgeInsets.only(bottom: 16),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 4,
+                ),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(4),
+                  ),
+                ),
+                child: pw.Text(
+                  theme,
+                  style: pw.TextStyle(
+                    font: fonts['bold'],
+                    fontSize: 16,
+                    color: PdfColors.grey800,
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 8),
+            ],
+          ),
         ),
       );
 
-      int themeTaskIndex = 1;
       for (var task in themeTasks) {
         if (task.answer != null) {
           widgets.add(
-            pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text(
-                  '$themeTaskIndex.',
-                  style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
-                ),
-                pw.SizedBox(width: 8),
-                _parseAnswerText(task.answer!, fonts),
-              ],
+            pw.Container(
+              margin: const pw.EdgeInsets.only(bottom: 12),
+              padding: const pw.EdgeInsets.all(12),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.grey200, width: 1),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+              ),
+              child: pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Container(
+                    padding: const pw.EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: pw.BoxDecoration(
+                      color: PdfColors.grey100,
+                      borderRadius: const pw.BorderRadius.all(
+                        pw.Radius.circular(4),
+                      ),
+                    ),
+                    child: pw.Text(
+                      '$globalTaskIndex.',
+                      style: pw.TextStyle(
+                        font: fonts['bold'],
+                        fontSize: 14,
+                        color: PdfColors.grey800,
+                      ),
+                    ),
+                  ),
+                  pw.SizedBox(width: 8),
+                  _parseAnswerText(task.answer!, fonts),
+                ],
+              ),
             ),
           );
         } else {
           widgets.add(
-            pw.Row(
-              children: [
-                pw.Text(
-                  '$themeTaskIndex.',
-                  style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
-                ),
-                pw.SizedBox(width: 8),
-                pw.Text(
-                  'Нет ответа',
-                  style: pw.TextStyle(font: fonts['regular'], fontSize: 18),
-                ),
-              ],
+            pw.Container(
+              margin: const pw.EdgeInsets.only(bottom: 12),
+              padding: const pw.EdgeInsets.all(12),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.grey200, width: 1),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+              ),
+              child: pw.Row(
+                children: [
+                  pw.Container(
+                    padding: const pw.EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: pw.BoxDecoration(
+                      color: PdfColors.grey100,
+                      borderRadius: const pw.BorderRadius.all(
+                        pw.Radius.circular(4),
+                      ),
+                    ),
+                    child: pw.Text(
+                      '$globalTaskIndex.',
+                      style: pw.TextStyle(
+                        font: fonts['bold'],
+                        fontSize: 14,
+                        color: PdfColors.grey800,
+                      ),
+                    ),
+                  ),
+                  pw.SizedBox(width: 8),
+                  pw.Text(
+                    'Нет ответа',
+                    style: pw.TextStyle(
+                      font: fonts['regular'],
+                      fontSize: 14,
+                      color: PdfColors.grey600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }
-        widgets.add(pw.SizedBox(height: 10));
-        themeTaskIndex++;
+        globalTaskIndex++;
       }
     });
 
     return [
       pw.Container(
+        padding: const pw.EdgeInsets.all(16),
         decoration: pw.BoxDecoration(
-          border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
+          border: pw.Border.all(color: PdfColors.grey300, width: 1),
+          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
         ),
-        padding: const pw.EdgeInsets.all(10),
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: widgets,
@@ -597,10 +725,27 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
       switch (task.structure!['type']) {
         case 'fraction':
           return pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                '$index.',
-                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(4),
+                  ),
+                ),
+                child: pw.Text(
+                  '$index.',
+                  style: pw.TextStyle(
+                    font: fonts['bold'],
+                    fontSize: 14,
+                    color: PdfColors.grey800,
+                  ),
+                ),
               ),
               pw.SizedBox(width: 8),
               _buildFractionWidget(
@@ -617,10 +762,27 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
           );
         case 'fractionOperation':
           return pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                '$index.',
-                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(4),
+                  ),
+                ),
+                child: pw.Text(
+                  '$index.',
+                  style: pw.TextStyle(
+                    font: fonts['bold'],
+                    fontSize: 14,
+                    color: PdfColors.grey800,
+                  ),
+                ),
               ),
               pw.SizedBox(width: 8),
               pw.Text(
@@ -647,10 +809,27 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
           );
         case 'equation':
           return pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                '$index.',
-                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(4),
+                  ),
+                ),
+                child: pw.Text(
+                  '$index.',
+                  style: pw.TextStyle(
+                    font: fonts['bold'],
+                    fontSize: 14,
+                    color: PdfColors.grey800,
+                  ),
+                ),
               ),
               pw.SizedBox(width: 8),
               pw.Text(
@@ -667,10 +846,27 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
           );
         case 'trig':
           return pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                '$index.',
-                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(4),
+                  ),
+                ),
+                child: pw.Text(
+                  '$index.',
+                  style: pw.TextStyle(
+                    font: fonts['bold'],
+                    fontSize: 14,
+                    color: PdfColors.grey800,
+                  ),
+                ),
               ),
               pw.SizedBox(width: 8),
               pw.Text(
@@ -681,10 +877,27 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
           );
         case 'power':
           return pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                '$index.',
-                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(4),
+                  ),
+                ),
+                child: pw.Text(
+                  '$index.',
+                  style: pw.TextStyle(
+                    font: fonts['bold'],
+                    fontSize: 14,
+                    color: PdfColors.grey800,
+                  ),
+                ),
               ),
               pw.SizedBox(width: 8),
               pw.Text(
@@ -700,10 +913,27 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
           );
         case 'logarithm':
           return pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(
-                '$index.',
-                style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(4),
+                  ),
+                ),
+                child: pw.Text(
+                  '$index.',
+                  style: pw.TextStyle(
+                    font: fonts['bold'],
+                    fontSize: 14,
+                    color: PdfColors.grey800,
+                  ),
+                ),
               ),
               pw.SizedBox(width: 8),
               pw.Text(
@@ -731,10 +961,25 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     if (task.text != null) {
       if (task.text!.contains('/') || task.text!.contains('^')) {
         return pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text(
-              '$index.',
-              style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+            pw.Container(
+              padding: const pw.EdgeInsets.symmetric(
+                horizontal: 6,
+                vertical: 2,
+              ),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.grey100,
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+              ),
+              child: pw.Text(
+                '$index.',
+                style: pw.TextStyle(
+                  font: fonts['bold'],
+                  fontSize: 14,
+                  color: PdfColors.grey800,
+                ),
+              ),
             ),
             pw.SizedBox(width: 8),
             _parseMixedText(task.text!, fonts),
@@ -743,10 +988,22 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
       }
 
       return pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text(
-            '$index.',
-            style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey100,
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+            ),
+            child: pw.Text(
+              '$index.',
+              style: pw.TextStyle(
+                font: fonts['bold'],
+                fontSize: 14,
+                color: PdfColors.grey800,
+              ),
+            ),
           ),
           pw.SizedBox(width: 8),
           pw.Text(
@@ -758,10 +1015,22 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
     }
 
     return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text(
-          '$index.',
-          style: pw.TextStyle(font: fonts['bold'], fontSize: 18),
+        pw.Container(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.grey100,
+            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+          ),
+          child: pw.Text(
+            '$index.',
+            style: pw.TextStyle(
+              font: fonts['bold'],
+              fontSize: 14,
+              color: PdfColors.grey800,
+            ),
+          ),
         ),
         pw.SizedBox(width: 8),
         pw.Text(
