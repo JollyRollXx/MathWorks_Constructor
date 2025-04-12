@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import '../widgets/common/animated_button.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   final void Function(ThemeMode) onThemeChanged;
@@ -32,6 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Colors.purple,
     Colors.red,
     Colors.teal,
+    Colors.black,
   ];
 
   @override
@@ -46,7 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _themeMode =
           ThemeMode.values[prefs.getInt('themeMode') ?? ThemeMode.system.index];
       _selectedColor = Color(
-        prefs.getInt('accentColor') ?? Colors.indigo.toARGB32(),
+        prefs.getInt('accentColor') ?? Colors.indigo.value,
       );
       _savePath = prefs.getString('savePath') ?? _savePath;
     });
@@ -55,11 +57,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _saveThemeMode(ThemeMode mode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('themeMode', mode.index);
+    widget.onThemeChanged(mode);
   }
 
   Future<void> _saveAccentColor(Color color) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('accentColor', color.toARGB32());
+    await prefs.setInt('accentColor', color.value);
+    widget.onColorChanged(color);
   }
 
   Future<void> _savePathSetting(String path) async {
@@ -75,6 +79,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (selectedDirectory != null) {
       await _savePathSetting(selectedDirectory);
     }
+  }
+
+  Future<void> _updateColorScheme(String scheme) async {
+    await AppTheme.setColorScheme(scheme);
   }
 
   @override

@@ -8,87 +8,80 @@ class CustomTitleBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final brightness = Theme.of(context).brightness;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Определяем цвет фона title bar в зависимости от темы
-    final backgroundColor =
-        brightness == Brightness.dark
-            ? Color(
-              0xFF242424,
-            ) // Немного светлее чем darkSurface для темной темы
-            : Colors.grey[50]; // Чуть темнее белого для светлой темы
-
-    return GestureDetector(
-      onPanStart: (details) {
-        windowManager.startDragging();
-      },
-      child: Container(
-        height: 32,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          border: Border(
-            bottom: BorderSide(
-              color:
-                  brightness == Brightness.dark
-                      ? Colors.black.withOpacity(0.3)
-                      : Colors.grey[300]!.withOpacity(0.5),
-            ),
+    return Container(
+      height: 32,
+      decoration: BoxDecoration(
+        color: isDark ? Color(0xFF000000) : Color(0xFFF5F5F5),
+        border: Border(
+          bottom: BorderSide(
+            color:
+                isDark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.1),
+            width: 1,
           ),
         ),
-        child: Stack(
-          children: [
-            // Кнопки управления окном справа
-            Align(
-              alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _WindowButton(
-                    icon: Icons.remove,
-                    onPressed: () async {
-                      await windowManager.minimize();
-                    },
-                    tooltip: 'Свернуть',
-                  ),
-                  _WindowButton(
-                    icon: Icons.crop_square,
-                    onPressed: () async {
-                      if (await windowManager.isMaximized()) {
-                        await windowManager.unmaximize();
-                      } else {
-                        await windowManager.maximize();
-                      }
-                    },
-                    tooltip: 'Развернуть',
-                  ),
-                  _WindowButton(
-                    icon: Icons.close,
-                    isClose: true,
-                    onPressed: () async {
-                      await windowManager.close();
-                    },
-                    tooltip: 'Закрыть',
-                  ),
-                ],
+      ),
+      child: Stack(
+        children: [
+          // Название приложения по центру
+          Center(
+            child: Text(
+              'MathWorks Constructor',
+              style: GoogleFonts.inter(
+                color: isDark ? Colors.white : Colors.black,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                decoration: TextDecoration.none,
+                letterSpacing: 0.3,
               ),
             ),
-            // Название приложения по центру
-            Center(
-              child: Material(
-                color: Colors.transparent,
-                type: MaterialType.transparency,
-                child: Text(
-                  'MathWorks Constructor',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: colorScheme.onSurface.withOpacity(0.8),
-                  ),
+          ),
+          // Область для перетаскивания окна
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onPanStart: (details) => windowManager.startDragging(),
+              child: const SizedBox.expand(),
+            ),
+          ),
+          // Кнопки управления окном справа
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _WindowButton(
+                  icon: Icons.horizontal_rule,
+                  onPressed: () async => await windowManager.minimize(),
+                  colorScheme: colorScheme,
+                  isDark: isDark,
                 ),
-              ),
+                _WindowButton(
+                  icon: Icons.check_box_outline_blank,
+                  onPressed: () async {
+                    if (await windowManager.isMaximized()) {
+                      await windowManager.unmaximize();
+                    } else {
+                      await windowManager.maximize();
+                    }
+                  },
+                  colorScheme: colorScheme,
+                  isDark: isDark,
+                ),
+                _WindowButton(
+                  icon: Icons.clear,
+                  onPressed: () async => await windowManager.close(),
+                  colorScheme: colorScheme,
+                  isDark: isDark,
+                  isClose: true,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -97,13 +90,15 @@ class CustomTitleBar extends StatelessWidget {
 class _WindowButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback onPressed;
-  final String tooltip;
+  final ColorScheme colorScheme;
+  final bool isDark;
   final bool isClose;
 
   const _WindowButton({
     required this.icon,
     required this.onPressed,
-    required this.tooltip,
+    required this.colorScheme,
+    required this.isDark,
     this.isClose = false,
   });
 
@@ -116,41 +111,37 @@ class _WindowButtonState extends State<_WindowButton> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final brightness = Theme.of(context).brightness;
-
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: Tooltip(
-        message: widget.tooltip,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: widget.onPressed,
-            child: Container(
-              width: 46,
-              height: double.infinity,
-              color:
-                  _isHovered
-                      ? (widget.isClose
-                          ? Colors.red.withOpacity(0.8)
-                          : (brightness == Brightness.dark
-                              ? Colors.white.withOpacity(0.1)
-                              : Colors.black.withOpacity(0.05)))
-                      : Colors.transparent,
-              child: Icon(
-                widget.icon,
-                size: 16,
-                color:
-                    _isHovered && widget.isClose
-                        ? Colors.white
-                        : colorScheme.onSurface.withOpacity(0.8),
-              ),
-            ),
+      child: GestureDetector(
+        onTap: widget.onPressed,
+        child: Container(
+          width: 46,
+          height: double.infinity,
+          color: _getBackgroundColor(),
+          child: Center(
+            child: Icon(widget.icon, size: 16, color: _getIconColor()),
           ),
         ),
       ),
     );
+  }
+
+  Color _getBackgroundColor() {
+    if (!_isHovered) return Colors.transparent;
+    if (widget.isClose) {
+      return widget.isDark ? Colors.red[800]! : Colors.red[500]!;
+    }
+    return widget.isDark
+        ? Colors.white.withOpacity(0.15)
+        : Colors.black.withOpacity(0.08);
+  }
+
+  Color _getIconColor() {
+    if (_isHovered && widget.isClose) {
+      return Colors.white;
+    }
+    return widget.isDark ? Colors.white : Colors.black.withOpacity(0.8);
   }
 }

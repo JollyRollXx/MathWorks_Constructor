@@ -9,6 +9,10 @@ import 'widgets/common/custom_title_bar.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final themeMode =
+      ThemeMode.values[prefs.getInt('themeMode') ?? ThemeMode.system.index];
+  final accentColor = Color(prefs.getInt('accentColor') ?? Colors.indigo.value);
 
   WindowOptions windowOptions = const WindowOptions(
     size: Size(1200, 800),
@@ -24,61 +28,60 @@ void main() async {
     await windowManager.focus();
   });
 
-  runApp(const MyApp());
+  runApp(MyApp(initialThemeMode: themeMode, initialAccentColor: accentColor));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final ThemeMode initialThemeMode;
+  final Color initialAccentColor;
+
+  const MyApp({
+    Key? key,
+    required this.initialThemeMode,
+    required this.initialAccentColor,
+  }) : super(key: key);
 
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = ThemeMode.system;
-  Color _colorSeed = Colors.indigo;
+  late ThemeMode _themeMode;
+  late Color _accentColor;
 
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    _themeMode = widget.initialThemeMode;
+    _accentColor = widget.initialAccentColor;
   }
 
-  Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
+  void _handleThemeChange(ThemeMode mode) {
     setState(() {
-      _themeMode =
-          ThemeMode.values[prefs.getInt('themeMode') ?? ThemeMode.system.index];
-      _colorSeed = Color(prefs.getInt('accentColor') ?? Colors.indigo.value);
+      _themeMode = mode;
     });
   }
 
-  void _updateTheme(ThemeMode mode) async {
-    setState(() => _themeMode = mode);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('themeMode', mode.index);
-  }
-
-  void _updateColor(Color color) async {
-    setState(() => _colorSeed = color);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('accentColor', color.value);
+  void _handleColorChange(Color color) {
+    setState(() {
+      _accentColor = color;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MathWorks Constructor',
-      theme: AppTheme.lightTheme(_colorSeed),
-      darkTheme: AppTheme.darkTheme(_colorSeed),
+      title: 'MathWorks',
+      theme: AppTheme.lightTheme(_accentColor),
+      darkTheme: AppTheme.darkTheme(_accentColor),
       themeMode: _themeMode,
       home: Column(
         children: [
           const CustomTitleBar(),
           Expanded(
             child: NavigationExample(
-              onThemeChanged: _updateTheme,
-              onColorChanged: _updateColor,
+              onThemeChanged: _handleThemeChange,
+              onColorChanged: _handleColorChange,
             ),
           ),
         ],
