@@ -911,7 +911,7 @@ class TaskGenerator {
           String answer = a > 0 ? 'x > ${-b / a}' : 'x < ${-b / a}';
           return MathTask.equation(theme, '${a}x + $b', '0', answer: answer);
         } else {
-          String answer = _solveLinear(a, b, 0);
+          String answer = _solveLinear(a.toDouble(), b.toDouble(), 0.0);
           return MathTask.equation(theme, '${a}x', '$b', answer: answer);
         }
 
