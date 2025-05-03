@@ -77,7 +77,7 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
       if (_selectedThemes.isNotEmpty || _tasksCount.isNotEmpty) {
         _selectedThemes = allThemes;
         for (var theme in _selectedThemes) {
-          _tasksCount[theme] = 3;
+          _tasksCount[theme] ??= 3;
         }
       }
     } else {
@@ -86,7 +86,7 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
       if (_selectedThemes.isNotEmpty || _tasksCount.isNotEmpty) {
         _selectedThemes = List.from(classThemes);
         for (var theme in _selectedThemes) {
-          _tasksCount[theme] = 3;
+          _tasksCount[theme] ??= 3;
         }
       }
     }
@@ -1780,6 +1780,7 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(16),
+          height: 120,
           decoration: BoxDecoration(
             color:
                 value
@@ -1795,6 +1796,7 @@ class _ConstructorScreenState extends State<ConstructorScreen> {
             ),
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
