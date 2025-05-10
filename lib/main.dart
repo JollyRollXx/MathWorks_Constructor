@@ -6,24 +6,40 @@ import 'core/theme/app_theme.dart';
 import 'navigation/app_navigation.dart';
 import 'widgets/common/custom_title_bar.dart';
 
-void main() async {
+/// Константы приложения
+class AppConstants {
+  static const String appTitle = 'MathWorks';
+  static const Size defaultWindowSize = Size(1200, 800);
+  static const Size minimumWindowSize = Size(800, 600);
+
+  // Ключи для SharedPreferences
+  static const String themeModeKey = 'themeMode';
+  static const String accentColorKey = 'accentColor';
+}
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
+
+  // Инициализация настроек
   final prefs = await SharedPreferences.getInstance();
   final themeMode =
-      ThemeMode.values[prefs.getInt('themeMode') ?? ThemeMode.system.index];
-  final accentColor = Color(prefs.getInt('accentColor') ?? Colors.indigo.value);
+      ThemeMode.values[prefs.getInt(AppConstants.themeModeKey) ??
+          ThemeMode.system.index];
+  final accentColor = Color(
+    prefs.getInt(AppConstants.accentColorKey) ?? Colors.indigo.value,
+  );
 
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(1200, 800),
-    minimumSize: Size(800, 600),
+    size: AppConstants.defaultWindowSize,
+    minimumSize: AppConstants.minimumWindowSize,
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
 
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
+  await windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();
   });
@@ -31,6 +47,7 @@ void main() async {
   runApp(MyApp(initialThemeMode: themeMode, initialAccentColor: accentColor));
 }
 
+/// Основной виджет приложения
 class MyApp extends StatefulWidget {
   final ThemeMode initialThemeMode;
   final Color initialAccentColor;
@@ -56,13 +73,19 @@ class _MyAppState extends State<MyApp> {
     _accentColor = widget.initialAccentColor;
   }
 
-  void _handleThemeChange(ThemeMode mode) {
+  // Сохраняем настройки при изменении темы
+  Future<void> _handleThemeChange(ThemeMode mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(AppConstants.themeModeKey, mode.index);
     setState(() {
       _themeMode = mode;
     });
   }
 
-  void _handleColorChange(Color color) {
+  // Сохраняем настройки при изменении цвета
+  Future<void> _handleColorChange(Color color) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(AppConstants.accentColorKey, color.value);
     setState(() {
       _accentColor = color;
     });
@@ -71,10 +94,11 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MathWorks',
+      title: AppConstants.appTitle,
       theme: AppTheme.lightTheme(_accentColor),
       darkTheme: AppTheme.darkTheme(_accentColor),
       themeMode: _themeMode,
+      debugShowCheckedModeBanner: false, // Убираем баннер debug
       home: Column(
         children: [
           const CustomTitleBar(),
